@@ -15,8 +15,8 @@ jobs.forEach(job => {
     cleanTitle,
     job.company || 'N/A',
     job.location || 'N/A',
-    (job.jobDescription || 'N/A').substring(0, 30000), // Limit for Excel cell
-    job.qualifications || 'N/A',
+    (job.jobDescription || 'N/A').substring(0, 10000), // Limit for Excel cell
+    (job.qualifications || 'N/A').substring(0, 5000),
     job.pay || 'N/A',
     job.date.startsWith('updated') ? 'N/A' : (job.date || 'N/A')
   ]);

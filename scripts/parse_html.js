@@ -16,45 +16,76 @@ function extractFromHTML(htmlContent) {
   const locationMatch = titleTag.match(/ - ([^,]+, \w+)/);
   result.location = locationMatch ? locationMatch[1] : 'N/A';
 
-  // Job Description - collect plain text divs without CSS classes
-  let jobDescription = '';
+  // Job Description - collect plain text divs without CSS classes, deduplicate and format
+  let descLines = [];
   $('#viewJobSSRRoot div').each((i, el) => {
     const text = $(el).text().trim();
     const classAttr = $(el).attr('class') || '';
     // Skip if has CSS-like class, or text starts with '.', or too short, or contains CSS keywords
-    if (text && text.length > 10 && !classAttr.startsWith('css-') && !text.startsWith('.') && !text.includes('{') && !text.includes('Find Jobs') && !text.includes('Skip to main content')) {
-      jobDescription += text + '\n';
+    if (text && text.length > 20 && !classAttr.startsWith('css-') && !text.startsWith('.') && !text.includes('{') && !text.includes('Find Jobs') && !text.includes('Skip to main content')) {
+      descLines.push(text);
     }
   });
-  result.jobDescription = jobDescription.trim() || 'N/A';
+  // Remove duplicates
+  const uniqueLines = [...new Set(descLines)];
+  // Format for readability: add blank line before headings
+  let formattedLines = [];
+  uniqueLines.forEach(line => {
+    // Check if line looks like a heading (ends with :, or all caps, or starts with bullet)
+    const isHeading = /:$/.test(line) || /^[A-Z\s]{5,}$/.test(line) || /^[-•*]\s/.test(line);
+    if (isHeading && formattedLines.length > 0) {
+      formattedLines.push(''); // Add blank line before heading
+    }
+    formattedLines.push(line);
+  });
+  result.jobDescription = formattedLines.join('\n').trim() || 'N/A';
 
-  // Qualifications - extract from jobDescription text
+  // Qualifications - extract from jobDescription text using multiple keywords
   let qualifications = [];
-  const desc = result.jobDescription;
-  const reqIndex = desc.toLowerCase().indexOf('required qualifications:');
-  if (reqIndex !== -1) {
-    const start = desc.indexOf('\n', reqIndex) + 1;
-    const prefIndex = desc.toLowerCase().indexOf('preferred qualifications:');
-    const end = prefIndex !== -1 ? prefIndex : desc.length;
-    const reqSection = desc.substring(start, end).trim();
-    const lines = reqSection.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.includes('Qualifications:'));
-    qualifications.push(...lines);
-  }
-  const prefIndex = desc.toLowerCase().indexOf('preferred qualifications:');
-  if (prefIndex !== -1) {
-    const start = desc.indexOf('\n', prefIndex) + 1;
-    const end = desc.toLowerCase().indexOf('job expectations:', start) !== -1 ? desc.toLowerCase().indexOf('job expectations:', start) : desc.length;
-    const prefSection = desc.substring(start, end).trim();
-    const lines = prefSection.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.includes('Qualifications:'));
-    qualifications.push(...lines.map(l => 'Preferred: ' + l));
+  const desc = result.jobDescription.toLowerCase();
+  const keywords = ['required qualifications', 'qualifications', 'requirements', 'skills', 'experience', 'option i', 'option ii', 'preferred qualifications'];
+  keywords.forEach(keyword => {
+    const index = desc.indexOf(keyword + ':');
+    if (index !== -1) {
+      const start = desc.indexOf('\n', index) + 1;
+      let end = desc.length;
+      // Find next keyword
+      const nextKeyword = keywords.find(k => desc.indexOf(k + ':', start) > start);
+      if (nextKeyword) {
+        end = desc.indexOf(nextKeyword + ':', start);
+      }
+      const section = result.jobDescription.substring(start, end).trim();
+      const lines = section.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.toLowerCase().includes(keyword));
+      qualifications.push(...lines);
+    }
+  });
+  // Also extract any lines with degree, experience, years
+  if (qualifications.length === 0) {
+    const lines = result.jobDescription.split('\n');
+    lines.forEach(line => {
+      const lower = line.toLowerCase();
+      if (lower.includes('degree') || lower.includes('experience') || lower.includes('skills') || lower.includes('requirements') || /\d+\s+years/.test(lower)) {
+        qualifications.push(line.trim());
+      }
+    });
   }
   result.qualifications = qualifications.join('; ') || 'N/A';
 
-  // Pay - search for $ or salary
+  // Pay - search for salary info
   let pay = 'N/A';
   const bodyText = $.text();
-  const payMatch = bodyText.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?(?:\s*\/\s*(?:year|month|hour|week))/i) || bodyText.match(/salary:?\s*\$[\d,]+/i);
-  if (payMatch) pay = payMatch[0];
+  const payPatterns = [
+    /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/i,
+    /(?:salary|pay|compensation):?\s*\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/i,
+    /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?\s*(?:an|per)\s*(?:hour|year)/i
+  ];
+  for (const pattern of payPatterns) {
+    const match = bodyText.match(pattern);
+    if (match) {
+      pay = match[0].trim();
+      break;
+    }
+  }
   result.pay = pay;
 
   // Date - search for posted
