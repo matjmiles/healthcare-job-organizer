@@ -67,7 +67,7 @@ function extractFromHTML(htmlContent) {
 }
 
 // Assume HTML files are named job1.html, job2.html, etc., or list them
-const htmlFiles = ['data/indeed Example.html']; // Replace with actual file names
+const htmlFiles = fs.readdirSync('data').filter(file => file.endsWith('.html')).map(file => 'data/' + file);
 const jobs = [];
 
 htmlFiles.forEach(file => {

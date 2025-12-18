@@ -4,9 +4,12 @@
   "description": "Extract job data from Indeed URLs",
   "main": "extract_jobs_bulk.js",
   "scripts": {
-    "start": "node scripts/parse_html.js"
+    "start": "node scripts/parse_html.js",
+    "generate": "node scripts/generate_docs.js",
+    "excel": "node scripts/generate_excel.js"
   },
   "dependencies": {
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.0.0",
+    "xlsx": "^0.18.5"
   }
 }
