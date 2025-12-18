@@ -5,7 +5,6 @@
   "main": "extract_jobs_bulk.js",
   "scripts": {
     "start": "node scripts/parse_html.js",
-    "generate": "node scripts/generate_docs.js",
     "excel": "node scripts/generate_excel.js"
   },
   "dependencies": {
