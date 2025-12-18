@@ -1,0 +1,12 @@
+{
+  "name": "job-extractor",
+  "version": "1.0.0",
+  "description": "Extract job data from Indeed URLs",
+  "main": "extract_jobs_bulk.js",
+  "scripts": {
+    "start": "node scripts/parse_html.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
