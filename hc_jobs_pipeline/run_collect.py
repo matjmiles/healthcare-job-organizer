@@ -38,12 +38,14 @@ QUAL_SECTIONS = [
 ]
 
 PAY_PATTERNS = [
-    # hourly
+    # hourly patterns
     re.compile(r"\$\s?(\d+(?:\.\d+)?)\s?[-–]\s?\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|/hr|hr)\b", re.I),
     re.compile(r"\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|/hr|hr)\b", re.I),
-    # annual
-    re.compile(r"\$\s?(\d{2,3}(?:,\d{3})+)\s?[-–]\s?\$\s?(\d{2,3}(?:,\d{3})+)\s?(?:per\s?year|/yr|annually|a\s?year)\b", re.I),
-    re.compile(r"\$\s?(\d{2,3}(?:,\d{3})+)\s?(?:per\s?year|/yr|annually|a\s?year)\b", re.I),
+    # annual patterns with decimal support and broader matching
+    re.compile(r"\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:and|\s?[-–]\s?)\s?\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|/yr|annually|a\s?year)\b", re.I),
+    re.compile(r"\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|/yr|annually|a\s?year)\b", re.I),
+    # catch "between $X and $Y per year" patterns
+    re.compile(r"between\s+\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s+and\s+\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s+per\s+year", re.I),
 ]
 
 def strip_html(html: str) -> str:
@@ -341,6 +343,7 @@ async def collect() -> None:
                             "remoteFlag": infer_remote_flag(loc),
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
+                            "pay": f"${pay_hr}/hr" if pay_hr else "N/A",
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
                             "date": None,  # most APIs don't provide closing dates
@@ -382,6 +385,7 @@ async def collect() -> None:
                             "remoteFlag": infer_remote_flag(loc),
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
+                            "pay": f"${pay_hr}/hr" if pay_hr else "N/A",
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
                             "date": None,

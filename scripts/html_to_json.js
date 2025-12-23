@@ -72,22 +72,58 @@ function extractFromHTML(htmlContent) {
   }
   result.qualifications = qualifications.join('; ') || 'N/A';
 
-  // Pay - search for salary info
+  // Pay - search for salary info and normalize to hourly
   let pay = 'N/A';
+  let payHourly = null;
+  let payRaw = null;
+  
   const bodyText = $.text();
   const payPatterns = [
-    /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/i,
-    /(?:salary|pay|compensation):?\s*\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/i,
-    /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?\s*(?:an|per)\s*(?:hour|year)/i
+    // hourly patterns
+    { pattern: /\$\s?(\d+(?:\.\d+)?)\s?[-–]\s?\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|\/hr|hr)\b/gi, type: 'hourly_range' },
+    { pattern: /\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|\/hr|hr)\b/gi, type: 'hourly' },
+    // annual patterns with decimal support
+    { pattern: /\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?[-–]\s?\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|\/yr|annually|a\s?year)\b/gi, type: 'annual_range' },
+    { pattern: /\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|\/yr|annually|a\s?year)\b/gi, type: 'annual' },
+    // fallback patterns
+    { pattern: /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/gi, type: 'fallback' },
+    { pattern: /(?:salary|pay|compensation):?\s*\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/gi, type: 'fallback' }
   ];
-  for (const pattern of payPatterns) {
-    const match = bodyText.match(pattern);
-    if (match) {
+
+  for (const patternObj of payPatterns) {
+    const matches = [...bodyText.matchAll(patternObj.pattern)];
+    if (matches.length > 0) {
+      const match = matches[0];
       pay = match[0].trim();
+      
+      // Normalize to hourly based on pattern type
+      if (patternObj.type === 'hourly_range' && match[1] && match[2]) {
+        const low = parseFloat(match[1]);
+        const high = parseFloat(match[2]);
+        payHourly = Math.round((low + high) / 2 * 100) / 100;
+        payRaw = { type: 'hourly_range', min: low, max: high };
+      } else if (patternObj.type === 'hourly' && match[1]) {
+        payHourly = Math.round(parseFloat(match[1]) * 100) / 100;
+        payRaw = { type: 'hourly', value: parseFloat(match[1]) };
+      } else if (patternObj.type === 'annual_range' && match[1] && match[2]) {
+        const low = parseFloat(match[1].replace(/,/g, ''));
+        const high = parseFloat(match[2].replace(/,/g, ''));
+        const midAnnual = (low + high) / 2;
+        payHourly = Math.round(midAnnual / 2080 * 100) / 100; // 2080 hours = 40hrs/week * 52 weeks
+        payRaw = { type: 'annual_range', min: low, max: high, annual_mid: midAnnual };
+      } else if (patternObj.type === 'annual' && match[1]) {
+        const annual = parseFloat(match[1].replace(/,/g, ''));
+        payHourly = Math.round(annual / 2080 * 100) / 100;
+        payRaw = { type: 'annual', value: annual };
+      }
       break;
     }
   }
-  result.pay = pay;
+  
+  // Store normalized hourly pay as primary pay field
+  result.pay = payHourly ? `$${payHourly}/hr` : pay;
+  result.payHourly = payHourly;
+  result.payRaw = payRaw;
 
   // Date - search for closing/deadline date, posting date, or any date
   let date = 'N/A';
@@ -152,6 +188,13 @@ function extractFromHTML(htmlContent) {
 
 // Read HTML files from data/html directory and output individual JSON files
 const htmlFiles = fs.readdirSync('data/html').filter(file => file.endsWith('.html')).map(file => 'data/html/' + file);
+
+// Clean up old JSON files first
+const existingJsonFiles = fs.readdirSync('data/json').filter(file => file.endsWith('.json') && file.match(/^\d+_/));
+existingJsonFiles.forEach(file => {
+  fs.unlinkSync(`data/json/${file}`);
+});
+console.log(`Cleaned up ${existingJsonFiles.length} existing JSON files`);
 
 let jobIndex = 1;
 let processedCount = 0;
