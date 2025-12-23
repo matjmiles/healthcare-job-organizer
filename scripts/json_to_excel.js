@@ -48,7 +48,16 @@ const wb = XLSX.utils.book_new();
 const ws = XLSX.utils.aoa_to_sheet(data);
 XLSX.utils.book_append_sheet(wb, ws, 'Jobs');
 
-// Write to file
-XLSX.writeFile(wb, 'output/jobs_consolidated.xlsx');
+// Generate timestamp for filename
+const now = new Date();
+const timestamp = now.toISOString()
+  .replace(/:/g, '-')        // Replace colons with hyphens for Windows compatibility
+  .replace(/\..+/, '')       // Remove milliseconds
+  .replace('T', '_');        // Replace T with underscore for readability
 
-console.log(`Excel file created: output/jobs_consolidated.xlsx with ${jobs.length} job entries`);
+const filename = `output/jobs_consolidated_${timestamp}.xlsx`;
+
+// Write to file
+XLSX.writeFile(wb, filename);
+
+console.log(`Excel file created: ${filename} with ${jobs.length} job entries`);

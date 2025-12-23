@@ -1,5 +1,6 @@
 const fs = require('fs');
 const cheerio = require('cheerio');
+const { meetsBachelorsRequirement, analyzeEducationRequirements } = require('./education_filter_js');
 
 function extractFromHTML(htmlContent) {
   const $ = cheerio.load(htmlContent);
@@ -153,6 +154,8 @@ function extractFromHTML(htmlContent) {
 const htmlFiles = fs.readdirSync('data/html').filter(file => file.endsWith('.html')).map(file => 'data/html/' + file);
 
 let jobIndex = 1;
+let processedCount = 0;
+let excludedCount = 0;
 
 htmlFiles.forEach(file => {
   try {
@@ -160,18 +163,33 @@ htmlFiles.forEach(file => {
     const data = extractFromHTML(html);
     data.sourceFile = file;
 
-    // Create individual JSON file for each job
+    // Apply education filtering - only process jobs that require bachelor's degrees
+    const passesEducationFilter = meetsBachelorsRequirement(data.jobDescription, data.qualifications);
+    const analysis = analyzeEducationRequirements(data.jobDescription, data.qualifications);
+    
+    if (!passesEducationFilter) {
+      excludedCount++;
+      console.log(`EXCLUDED ${file}: ${analysis.reasoning} (Score: ${analysis.score})`);
+      return; // Skip this job
+    }
+
+    // Create individual JSON file for each job that passes filtering
     const baseName = file.replace('data/html/', '').replace('.html', '');
     const cleanName = baseName.replace(/[^\w\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
     const outputFileName = `data/json/${jobIndex}_${cleanName}.json`;
 
     fs.writeFileSync(outputFileName, JSON.stringify(data, null, 2));
-    console.log(`Data extracted to ${outputFileName}`);
+    console.log(`INCLUDED ${outputFileName}: ${analysis.reasoning} (Score: ${analysis.score})`);
 
     jobIndex++;
+    processedCount++;
   } catch (err) {
     console.error(`Error parsing ${file}:`, err.message);
   }
 });
 
-console.log(`Successfully processed ${jobIndex - 1} job files.`);
+console.log(`\n=== EDUCATION FILTERING RESULTS ===`);
+console.log(`Total HTML files processed: ${htmlFiles.length}`);
+console.log(`Jobs meeting bachelor's requirement: ${processedCount}`);
+console.log(`Jobs excluded (no bachelor's required): ${excludedCount}`);
+console.log(`Filtering effectiveness: ${((excludedCount / htmlFiles.length) * 100).toFixed(1)}% filtered out`);

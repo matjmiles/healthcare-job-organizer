@@ -47,10 +47,41 @@ PAY_PATTERNS = [
 ]
 
 def strip_html(html: str) -> str:
+    """Strip HTML tags and clean up text formatting."""
+    if not html:
+        return ""
+    
     soup = BeautifulSoup(html or "", "lxml")
     text = soup.get_text("\n")
+    
+    # Clean up whitespace and formatting
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    
+    # Remove any remaining HTML entities
+    text = re.sub(r"&\w+;", "", text)
+    
+    # Clean up extra whitespace
+    text = re.sub(r" {2,}", " ", text)
+    
     return text
+
+def clean_text_field(text: str) -> str:
+    """Clean any text field of HTML and normalize formatting."""
+    if not text:
+        return ""
+    
+    # Strip HTML if present
+    cleaned = strip_html(text)
+    
+    # Remove any weird encoding artifacts
+    cleaned = cleaned.replace('\xa0', ' ')  # non-breaking space
+    cleaned = cleaned.replace('\u200b', '')  # zero-width space
+    cleaned = cleaned.replace('\ufeff', '')  # byte order mark
+    
+    # Normalize whitespace
+    cleaned = ' '.join(cleaned.split())
+    
+    return cleaned.strip()
 
 def infer_state(location: str) -> Optional[str]:
     if not location:
@@ -286,13 +317,13 @@ async def collect() -> None:
                         quals = extract_qualifications(full_text)
 
                         results.append({
-                            "jobTitle": title,
-                            "company": company,
-                            "location": loc,
+                            "jobTitle": clean_text_field(title),
+                            "company": clean_text_field(company),
+                            "location": clean_text_field(loc),
                             "state": infer_state(loc),
                             "remoteFlag": infer_remote_flag(loc),
-                            "jobDescription": desc,
-                            "qualifications": quals,
+                            "jobDescription": desc,  # Already cleaned in lever_description
+                            "qualifications": clean_text_field(quals),
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
                             "date": None,  # most APIs don't provide closing dates
@@ -327,13 +358,13 @@ async def collect() -> None:
                         updated = parse_date(j.get("updated_at"))
 
                         results.append({
-                            "jobTitle": title,
-                            "company": company,
-                            "location": loc,
+                            "jobTitle": clean_text_field(title),
+                            "company": clean_text_field(company),
+                            "location": clean_text_field(loc),
                             "state": infer_state(loc),
                             "remoteFlag": infer_remote_flag(loc),
-                            "jobDescription": desc,
-                            "qualifications": quals,
+                            "jobDescription": desc,  # Already cleaned in gh_description
+                            "qualifications": clean_text_field(quals),
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
                             "date": None,
