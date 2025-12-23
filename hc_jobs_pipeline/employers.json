@@ -1,0 +1,18 @@
+[
+  { "company": "Nomi Health", "platform": "lever", "slug": "nomihealth" },
+  { "company": "Included Health", "platform": "lever", "slug": "includedhealth" },
+  { "company": "Lyra Health", "platform": "lever", "slug": "lyrahealth" },
+  { "company": "Planned Parenthood Association of Utah", "platform": "lever", "slug": "ppau" },
+
+  { "company": "Charlie Health", "platform": "greenhouse", "slug": "charliehealth" },
+  { "company": "Midi Health", "platform": "greenhouse", "slug": "midihealth" },
+  { "company": "Frontera Health", "platform": "greenhouse", "slug": "fronterahealth" },
+  { "company": "Guidelight Health", "platform": "greenhouse", "slug": "guidelighthealth" },
+  { "company": "Sandstone Care", "platform": "greenhouse", "slug": "sandstonecare" },
+  { "company": "Kindbridge", "platform": "greenhouse", "slug": "kindbridgecorporation" },
+
+  { "company": "Capital Rx (Judi Health)", "platform": "greenhouse", "slug": "capitalrx" },
+  { "company": "Ceribell", "platform": "greenhouse", "slug": "ceribell" },
+  { "company": "Vail Health Hospital", "platform": "greenhouse", "slug": "vailclinicincdbavailhealthhospital" },
+  { "company": "Sideby Care", "platform": "greenhouse", "slug": "sidebycare" }
+]

@@ -7,8 +7,12 @@ This project extracts job posting details from saved Indeed HTML files and organ
 - `docs/`: Documentation (this README).
 - `scripts/`: JavaScript files for extraction and generation.
   - `extract_job.js`: Manual script for browser console (for single jobs).
-  - `parse_html.js`: Node.js script to parse saved HTML files and extract data.
-  - `generate_excel.js`: Script to create Excel file from extracted job data.
+  - `html_to_json.js`: Node.js script to parse saved HTML files and extract data into JSON.
+  - `json_to_excel.js`: Script to create Excel file from JSON data.
+- `hc_jobs_pipeline/`: Python-based job collection pipeline.
+  - Collects job listings from public ATS APIs (Lever, Greenhouse).
+  - Filters to western states and healthcare admin roles.
+  - Outputs structured JSON files ready for processing.
 - `data/`: Input and output data.
   - `Healthcare Operations Coordinator.txt`: List of job titles and URLs (reference).
   - `*.html`: Saved Indeed job pages.
@@ -26,9 +30,16 @@ This project extracts job posting details from saved Indeed HTML files and organ
 
 ### Automated Workflow for Bulk Jobs
 
-1. Save Indeed job pages: For each job URL, open in browser, save as "Webpage, Complete" (.html file) in `data/`.
-2. Run `npm start`: Parses all `.html` files in `data/`, extracts job details (title, company, location, description, qualifications, pay, date), and saves to `data/jobs_data.json`.
-3. Run `npm run excel`: Generates `output/jobs.xlsx` with data in columns (Job Title, Company, Location, Job Description, Qualifications, Pay, Date).
+1. Save Indeed job pages: For each job URL, open in browser, save as "Webpage, Complete" (.html file) in `data/html/`.
+2. Run `npm run html-to-json`: Parses all `.html` files in `data/html/`, extracts job details, and saves individual JSON files to `data/json/`.
+
+**Enhanced Job Data Schema (from ATS Pipeline):**
+- Core fields: `jobTitle`, `company`, `location`, `jobDescription`, `qualifications`
+- Pay information: `payHourly`, `payRaw` (when available)
+- Metadata: `date`, `entryLevelFlag`, `careerTrack`, `remoteFlag`, `state`
+- Source tracking: `sourceFile`, `sourcePlatform`, `collectedAt`
+3. Run `npm run json-to-excel`: Generates `output/jobs_consolidated.xlsx` with data in columns (Job Title, Company, Location, Job Description, Qualifications, Pay, Date, Entry Level Flag, Career Track) from all JSON files in `data/json/`.
+4. Alternatively, run `npm start` to execute both steps sequentially.
 
 ### Manual Extraction (Single Job)
 
@@ -36,6 +47,21 @@ This project extracts job posting details from saved Indeed HTML files and organ
 2. Paste `scripts/extract_job.js` into console and run.
 3. Copy the JSON output to `data/jobs_data.json`.
 4. Run `npm run excel` to create the Excel file.
+
+### Automated Job Collection from ATS APIs
+
+1. Navigate to `hc_jobs_pipeline/` directory.
+2. Follow setup instructions in `hc_jobs_pipeline/README.md` (create venv, install dependencies).
+3. Edit `employers.json` with ATS slugs for target employers.
+4. Run `py run_collect.py` to collect jobs from western states.
+5. Pipeline automatically outputs to both `hc_jobs_pipeline/output/` and `data/json/` for seamless integration.
+
+**Pipeline Features:**
+- **Geographic Filtering**: ID, WA, OR, UT, WY, MT, CO, AZ
+- **Smart Title Filtering**: Includes coordinator, specialist, assistant roles; excludes director, physician, senior roles
+- **Career Track Classification**: Automatically categorizes as "Hospital Administration" or "Long-Term Care Administration"
+- **Entry-Level Detection**: Identifies likely entry-level positions using title hints and description analysis
+5. Output files will be in `hc_jobs_pipeline/output/` as JSON arrays compatible with the main processing pipeline.
 
 ## Features
 

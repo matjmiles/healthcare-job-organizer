@@ -159,15 +159,15 @@ htmlFiles.forEach(file => {
     const html = fs.readFileSync(file, 'utf-8');
     const data = extractFromHTML(html);
     data.sourceFile = file;
-    
+
     // Create individual JSON file for each job
     const baseName = file.replace('data/html/', '').replace('.html', '');
     const cleanName = baseName.replace(/[^\w\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
     const outputFileName = `data/json/${jobIndex}_${cleanName}.json`;
-    
+
     fs.writeFileSync(outputFileName, JSON.stringify(data, null, 2));
     console.log(`Data extracted to ${outputFileName}`);
-    
+
     jobIndex++;
   } catch (err) {
     console.error(`Error parsing ${file}:`, err.message);
