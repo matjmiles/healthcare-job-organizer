@@ -51,19 +51,27 @@ def strip_html(html: str) -> str:
     if not html:
         return ""
     
-    soup = BeautifulSoup(html or "", "lxml")
-    text = soup.get_text("\n")
+    soup = BeautifulSoup(html or "", "html.parser")
+    
+    # Get text with some structure preserved
+    text = soup.get_text(separator="\n", strip=True)
     
     # Clean up whitespace and formatting
-    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"\n\s*\n", "\n\n", text)  # Clean up empty lines with spaces
     
     # Remove any remaining HTML entities
-    text = re.sub(r"&\w+;", "", text)
+    text = re.sub(r"&[a-zA-Z0-9#]+;", "", text)
     
-    # Clean up extra whitespace
-    text = re.sub(r" {2,}", " ", text)
+    # Clean up extra whitespace within lines
+    lines = text.split('\n')
+    cleaned_lines = []
+    for line in lines:
+        cleaned_line = re.sub(r" {2,}", " ", line.strip())
+        if cleaned_line:  # Only add non-empty lines
+            cleaned_lines.append(cleaned_line)
     
-    return text
+    return '\n'.join(cleaned_lines)
 
 def clean_text_field(text: str) -> str:
     """Clean any text field of HTML and normalize formatting."""
@@ -77,6 +85,15 @@ def clean_text_field(text: str) -> str:
     cleaned = cleaned.replace('\xa0', ' ')  # non-breaking space
     cleaned = cleaned.replace('\u200b', '')  # zero-width space
     cleaned = cleaned.replace('\ufeff', '')  # byte order mark
+    cleaned = cleaned.replace('\u00a0', ' ')  # another non-breaking space variant
+    
+    # Handle common HTML entities that might have been missed
+    cleaned = cleaned.replace('&nbsp;', ' ')
+    cleaned = cleaned.replace('&amp;', '&')
+    cleaned = cleaned.replace('&lt;', '<')
+    cleaned = cleaned.replace('&gt;', '>')
+    cleaned = cleaned.replace('&quot;', '"')
+    cleaned = cleaned.replace('&#39;', "'")
     
     # Normalize whitespace
     cleaned = ' '.join(cleaned.split())
@@ -322,7 +339,7 @@ async def collect() -> None:
                             "location": clean_text_field(loc),
                             "state": infer_state(loc),
                             "remoteFlag": infer_remote_flag(loc),
-                            "jobDescription": desc,  # Already cleaned in lever_description
+                            "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
@@ -363,7 +380,7 @@ async def collect() -> None:
                             "location": clean_text_field(loc),
                             "state": infer_state(loc),
                             "remoteFlag": infer_remote_flag(loc),
-                            "jobDescription": desc,  # Already cleaned in gh_description
+                            "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
                             "payHourly": pay_hr,
                             "payRaw": pay_raw,
