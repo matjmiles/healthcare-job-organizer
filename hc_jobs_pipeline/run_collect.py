@@ -9,6 +9,9 @@ from bs4 import BeautifulSoup
 from dateutil import parser as dtparser
 from rapidfuzz import fuzz
 
+# Import our education filtering logic
+from education_filters import meets_bachelors_requirement, analyze_education_requirements
+
 TARGET_STATES = {"ID", "WA", "OR", "UT", "WY", "MT", "CO", "AZ"}
 
 ENTRY_LEVEL_TITLE_HINTS = [
@@ -231,7 +234,15 @@ def looks_like_health_admin(title: str, text: str) -> bool:
         "billing", "revenue cycle", "unit clerk", "office", "medical receptionist", "him",
         "health information", "admissions", "intake", "case management assistant", "bed management", "ait"
     ]
-    return any(h in combined for h in admin_hints)
+    admin_check = any(h in combined for h in admin_hints)
+    
+    if not admin_check:
+        return False
+    
+    # NEW: Check education requirements - must require bachelor's degree
+    education_check = meets_bachelors_requirement(text or "")
+    
+    return education_check
 
 async def collect() -> None:
     root = Path(__file__).resolve().parent
