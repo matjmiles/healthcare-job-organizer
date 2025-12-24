@@ -2,6 +2,80 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const { meetsBachelorsRequirement, analyzeEducationRequirements } = require('./education_filter_js');
 
+// Constants for field inference (matching Python pipeline)
+const TARGET_STATES = new Set(["ID", "WA", "OR", "UT", "WY", "MT", "CO", "AZ"]);
+
+const ENTRY_LEVEL_TITLE_HINTS = [
+  "coordinator", "representative", "specialist", "assistant", "associate",
+  "clerk", "scheduler", "scheduling", "patient access", "registration",
+  "referral", "prior auth", "authorization", "front desk", "unit clerk",
+  "medical receptionist", "office", "admin", "administrator in training", "ait"
+];
+
+const EXCLUDE_TITLE_HINTS = [
+  "director", "senior director", "vp", "vice president", "chief", "cfo", "coo",
+  "manager, senior", "sr manager", "principal", "physician", "rn", "np", "pa-c"
+];
+
+const CAREER_TRACK_RULES = [
+  ["Long-Term Care Administration", [/\bait\b/i, /administrator in training/i, /assisted living/i, /skilled nursing/i, /snf/i, /memory care/i, /long[-\s]?term care/i]],
+  ["Hospital Administration", [/patient access/i, /registration/i, /scheduler/i, /scheduling/i, /clinic/i, /front desk/i, /revenue cycle/i, /billing/i, /referral/i, /prior auth/i, /authorization/i, /him/i, /health information/i]]
+];
+
+// Inference functions (matching Python pipeline logic)
+function inferState(location) {
+  if (!location) return null;
+  const match = location.match(/\b([A-Z]{2})\b/);
+  if (match && TARGET_STATES.has(match[1])) {
+    return match[1];
+  }
+  return null;
+}
+
+function inferRemoteFlag(location) {
+  if (!location) return false;
+  return /\bremote\b|\bwork from home\b|\btelecommute\b/i.test(location);
+}
+
+function inferCareerTrack(text) {
+  const t = (text || "").toLowerCase();
+  for (const [track, patterns] of CAREER_TRACK_RULES) {
+    for (const pattern of patterns) {
+      if (pattern.test(t)) {
+        return track;
+      }
+    }
+  }
+  return "Hospital Administration";
+}
+
+function titleIsExcluded(title) {
+  const t = (title || "").toLowerCase();
+  return EXCLUDE_TITLE_HINTS.some(hint => t.includes(hint));
+}
+
+function inferEntryLevelFlag(title, description) {
+  const t = (title || "").toLowerCase();
+  if (titleIsExcluded(title)) return false;
+  
+  if (ENTRY_LEVEL_TITLE_HINTS.some(hint => t.includes(hint))) {
+    return true;
+  }
+
+  // fallback: look for "0-1 years", "no experience required", etc.
+  const d = (description || "").toLowerCase();
+  if (/\bno experience required\b|\b0\s?[-–]\s?1\s?year\b|\bentry[-\s]?level\b/.test(d)) {
+    return true;
+  }
+  
+  // if explicitly requires 5+ years, treat as not entry
+  if (/\b5\+\s?years\b|\bfive\+\s?years\b|\b7\+\s?years\b/.test(d)) {
+    return false;
+  }
+  
+  return false;
+}
+
 function extractFromHTML(htmlContent) {
   const $ = cheerio.load(htmlContent);
   const result = {};
@@ -181,7 +255,15 @@ function extractFromHTML(htmlContent) {
       // Keep original if parsing fails
     }
   }
-  result.date = date;
+  result.date = date === 'N/A' ? null : date;
+
+  // Add missing fields to match Python pipeline schema
+  result.state = inferState(result.location);
+  result.remoteFlag = inferRemoteFlag(result.location);
+  result.sourcePlatform = "html";
+  result.careerTrack = inferCareerTrack(result.jobDescription + " " + result.qualifications);
+  result.entryLevelFlag = inferEntryLevelFlag(result.jobTitle, result.jobDescription);
+  result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 
   return result;
 }
