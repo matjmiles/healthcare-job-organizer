@@ -196,8 +196,6 @@ function extractFromHTML(htmlContent) {
   
   // Store normalized hourly pay as primary pay field
   result.pay = payHourly ? `$${payHourly}/hr` : pay;
-  result.payHourly = payHourly;
-  result.payRaw = payRaw;
 
   // Date - search for closing/deadline date, posting date, or any date
   let date = 'N/A';
@@ -286,7 +284,16 @@ htmlFiles.forEach(file => {
   try {
     const html = fs.readFileSync(file, 'utf-8');
     const data = extractFromHTML(html);
-    data.sourceFile = file;
+    
+    // Extract original URL from HTML metadata if available, otherwise use file path
+    const $ = cheerio.load(html);
+    const originalUrl = $('#indeed-share-url').attr('content');
+    if (originalUrl) {
+      // Decode HTML entities in the URL
+      data.sourceFile = originalUrl.replace(/&amp;/g, '&');
+    } else {
+      data.sourceFile = file;
+    }
 
     // Apply education filtering - only process jobs that require bachelor's degrees
     const passesEducationFilter = meetsBachelorsRequirement(data.jobDescription, data.qualifications);

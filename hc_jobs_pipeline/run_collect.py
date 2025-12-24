@@ -344,8 +344,6 @@ async def collect() -> None:
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
                             "pay": f"${pay_hr}/hr" if pay_hr else "N/A",
-                            "payHourly": pay_hr,
-                            "payRaw": pay_raw,
                             "date": None,  # most APIs don't provide closing dates
                             "sourceFile": url,
                             "sourcePlatform": "lever",
@@ -386,8 +384,6 @@ async def collect() -> None:
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
                             "pay": f"${pay_hr}/hr" if pay_hr else "N/A",
-                            "payHourly": pay_hr,
-                            "payRaw": pay_raw,
                             "date": None,
                             "sourceFile": url,
                             "sourcePlatform": "greenhouse",

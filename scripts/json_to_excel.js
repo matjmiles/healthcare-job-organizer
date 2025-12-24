@@ -25,7 +25,7 @@ jsonFiles.forEach(file => {
 
 // Prepare data for Excel
 const data = [
-  ['Job Title', 'Company', 'Location', 'Job Description', 'Qualifications', 'Pay', 'Date', 'Entry Level Flag', 'Career Track']
+  ['Job Title', 'Company', 'Location', 'Job Description', 'Qualifications', 'Pay', 'Date', 'State', 'Remote Flag', 'Source Platform', 'Career Track', 'Entry Level Flag', 'Collected At', 'Source File']
 ];
 
 jobs.forEach(job => {
@@ -38,8 +38,13 @@ jobs.forEach(job => {
     (job.qualifications || 'N/A').substring(0, 5000),
     job.pay || 'N/A',
     job.date && job.date.startsWith('updated') ? 'N/A' : (job.date || 'N/A'),
+    job.state || 'N/A',
+    job.remoteFlag !== undefined ? job.remoteFlag.toString() : 'N/A',
+    job.sourcePlatform || 'N/A',
+    job.careerTrack || 'N/A',
     job.entryLevelFlag !== undefined ? job.entryLevelFlag.toString() : 'N/A',
-    job.careerTrack || 'N/A'
+    job.collectedAt || 'N/A',
+    job.sourceFile || 'N/A'
   ]);
 });
 
