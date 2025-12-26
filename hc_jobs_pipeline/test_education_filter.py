@@ -64,12 +64,12 @@ test_cases = [
         "expected": False
     },
     {
-        "name": "Master's Degree (SHOULD INCLUDE)",
+        "name": "Master's Degree (SHOULD EXCLUDE - OVERQUALIFIED)",
         "description": """
         Master's degree in Healthcare Administration (MHA) or related field
         5+ years of leadership experience in healthcare settings
         """,
-        "expected": True
+        "expected": False
     },
     {
         "name": "No Clear Education Requirements (SHOULD EXCLUDE)",

@@ -198,7 +198,7 @@ CONTEXT_EXCLUSIONS = [
 
 PATTERN_WEIGHTS = {
     'healthcare_admin_bachelors': 10,  # Highest priority
-    'advanced_degree': 8,             # Definitely include
+    'advanced_degree': -8,            # Exclude - overqualified positions
     'bachelors_required': 6,          # Strong inclusion
     'bachelors_mentioned': 4,         # Moderate inclusion  
     'high_school_only': -10,          # Strong exclusion
@@ -301,14 +301,19 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             score += PATTERN_WEIGHTS['context_exclusion']
     
     # FINAL CHECK: If no bachelor's mentioned but high school is, exclude
-    has_bachelors = len(matches['healthcare_admin_bachelors']) > 0 or len(matches['advanced_degree']) > 0 or len(matches['bachelors_required']) > 0 or len(matches['bachelors_mentioned']) > 0
+    has_bachelors = len(matches['healthcare_admin_bachelors']) > 0 or len(matches['bachelors_required']) > 0 or len(matches['bachelors_mentioned']) > 0
     has_high_school = len(matches['high_school_only']) > 0
+    has_advanced_degree = len(matches['advanced_degree']) > 0
     
     if has_high_school and not has_bachelors:
         score = -100
     
-    # Determine if we should include this job (must have positive score AND bachelor's mention)
-    should_include = score > 0 and has_bachelors
+    # STRICT EXCLUSION: If advanced degree is required, exclude regardless of other factors
+    if has_advanced_degree:
+        score = -100
+    
+    # Determine if we should include this job (must have positive score AND bachelor's mention AND no advanced degree)
+    should_include = score > 0 and has_bachelors and not has_advanced_degree
     
     # Generate reasoning
     reasoning_parts = []
@@ -316,7 +321,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     if matches['healthcare_admin_bachelors']:
         reasoning_parts.append("Healthcare administration degree mentioned")
     if matches['advanced_degree']:
-        reasoning_parts.append("Advanced degree (Master's/PhD) mentioned")
+        reasoning_parts.append("Advanced degree required (overqualified)")
     if matches['bachelors_required']:
         reasoning_parts.append("Bachelor's degree explicitly required")
     if matches['bachelors_mentioned']:

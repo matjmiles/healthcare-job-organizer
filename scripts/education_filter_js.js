@@ -138,7 +138,7 @@ const CONTEXT_EXCLUSIONS = [
 // Pattern weights for scoring
 const PATTERN_WEIGHTS = {
     healthcare_admin_bachelors: 10,
-    advanced_degree: 8,
+    advanced_degree: -8,              // Exclude - overqualified positions
     bachelors_required: 6,
     bachelors_mentioned: 4,
     high_school_only: -10,
@@ -237,22 +237,27 @@ function analyzeEducationRequirements(jobDescription, qualifications = "") {
     
     // FINAL CHECK: If no bachelor's mentioned but high school is, exclude
     const hasBachelors = matches.healthcare_admin_bachelors.length > 0 || 
-                        matches.advanced_degree.length > 0 || 
                         matches.bachelors_required.length > 0 || 
                         matches.bachelors_mentioned.length > 0;
     const hasHighSchool = matches.high_school_only.length > 0;
+    const hasAdvancedDegree = matches.advanced_degree.length > 0;
     
     if (hasHighSchool && !hasBachelors) {
         score = -100;
     }
     
-    // Determine if we should include this job (must have positive score AND bachelor's mention)
-    const shouldInclude = score > 0 && hasBachelors;
+    // STRICT EXCLUSION: If advanced degree is required, exclude regardless of other factors
+    if (hasAdvancedDegree) {
+        score = -100;
+    }
+    
+    // Determine if we should include this job (must have positive score AND bachelor's mention AND no advanced degree)
+    const shouldInclude = score > 0 && hasBachelors && !hasAdvancedDegree;
     
     // Generate reasoning
     const reasoningParts = [];
     if (matches.healthcare_admin_bachelors.length > 0) reasoningParts.push("Healthcare administration degree mentioned");
-    if (matches.advanced_degree.length > 0) reasoningParts.push("Advanced degree (Master's/PhD) mentioned");
+    if (matches.advanced_degree.length > 0) reasoningParts.push("Advanced degree required (overqualified)");
     if (matches.bachelors_required.length > 0) reasoningParts.push("Bachelor's degree explicitly required");
     if (matches.bachelors_mentioned.length > 0) reasoningParts.push("Bachelor's degree mentioned");
     if (matches.high_school_only.length > 0) reasoningParts.push("High school/Associates degree mentioned");
