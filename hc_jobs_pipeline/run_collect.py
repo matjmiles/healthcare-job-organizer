@@ -214,6 +214,15 @@ def extract_qualifications(full_text: str) -> str:
     top = [b for s, b in scored[:12] if s >= 2]
     return "\n".join(top)
 
+def extract_pay_from_html(html: str) -> Tuple[Optional[float], Optional[Dict[str, Any]]]:
+    """Extract pay from full HTML content."""
+    if not html:
+        return None, None
+
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(separator="\n", strip=True)
+    return normalize_pay_to_hourly(text)
+
 def normalize_pay_to_hourly(text: str) -> Tuple[Optional[float], Optional[Dict[str, Any]]]:
     """
     Returns (payHourly_midpoint, payRaw_dict).
@@ -379,34 +388,35 @@ async def collect() -> None:
             slug = emp["slug"].strip()
 
             try:
-                if platform == "lever":
-                    jobs = await fetch_lever(client, slug)
-                    for j in jobs:
-                        title = j.get("text") or ""
-                        url = j.get("hostedUrl") or ""
-                        loc = lever_location(j)
-                        desc = lever_description(j)
-                        
-                        # Track all jobs analyzed
-                        filtering_stats["total_jobs_analyzed"] += 1
-                        
-                        admin_check, reason = looks_like_health_admin(title, desc)
-                        if not admin_check:
-                            filtering_stats["filtered_out"][reason] += 1
-                            continue
-                        
-                        # Check if job is in US (allow all US states, filter international)
-                        state = infer_state(loc)
-                        if not state or state not in TARGET_STATES:
-                            filtering_stats["filtered_out"]["non_us_locations"] += 1
-                            continue
+                 if platform == "lever":
+                     jobs = await fetch_lever(client, slug)
+                     for j in jobs:
+                         title = j.get("text") or ""
+                         url = j.get("hostedUrl") or ""
+                         loc = lever_location(j)
+                         desc = lever_description(j)
 
-                        pay_hr, pay_raw = normalize_pay_to_hourly(desc)
-                        track = infer_career_track(title + "\n" + desc)
-                        entry = entry_level_flag(title, desc)
+                         # Track all jobs analyzed
+                         filtering_stats["total_jobs_analyzed"] += 1
 
-                        full_text = (title + "\n" + loc + "\n" + desc).strip()
-                        quals = quals_extractor.extract_comprehensive_qualifications(full_text)
+                         admin_check, reason = looks_like_health_admin(title, desc)
+                         if not admin_check:
+                             filtering_stats["filtered_out"][reason] += 1
+                             continue
+
+                         # Check if job is in US (allow all US states, filter international)
+                         state = infer_state(loc)
+                         if not state or state not in TARGET_STATES:
+                             filtering_stats["filtered_out"]["non_us_locations"] += 1
+                             continue
+
+                         full_text_for_pay = (title + "\n" + loc + "\n" + desc).strip()
+                         pay_hr, pay_raw = normalize_pay_to_hourly(full_text_for_pay)
+                         track = infer_career_track(title + "\n" + desc)
+                         entry = entry_level_flag(title, desc)
+
+                         full_text = (title + "\n" + loc + "\n" + desc).strip()
+                         quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
                         # This job passed all filters
                         filtering_stats["final_jobs_included"] += 1
@@ -431,34 +441,35 @@ async def collect() -> None:
                             "collectedAt": datetime.utcnow().isoformat(timespec="seconds") + "Z"
                         })
 
-                elif platform == "greenhouse":
-                    jobs = await fetch_greenhouse(client, slug)
-                    for j in jobs:
-                        title = j.get("title") or ""
-                        url = j.get("absolute_url") or ""
-                        loc = gh_location(j)
-                        desc = gh_description(j)
-                        
-                        # Track all jobs analyzed
-                        filtering_stats["total_jobs_analyzed"] += 1
-                        
-                        admin_check, reason = looks_like_health_admin(title, desc)
-                        if not admin_check:
-                            filtering_stats["filtered_out"][reason] += 1
-                            continue
-                        
-                        # Check if job is in US (allow all US states, filter international)
-                        state = infer_state(loc)
-                        if not state or state not in TARGET_STATES:
-                            filtering_stats["filtered_out"]["non_us_locations"] += 1
-                            continue
+                 elif platform == "greenhouse":
+                     jobs = await fetch_greenhouse(client, slug)
+                     for j in jobs:
+                         title = j.get("title") or ""
+                         url = j.get("absolute_url") or ""
+                         loc = gh_location(j)
+                         desc = gh_description(j)
 
-                        pay_hr, pay_raw = normalize_pay_to_hourly(desc)
-                        track = infer_career_track(title + "\n" + desc)
-                        entry = entry_level_flag(title, desc)
+                         # Track all jobs analyzed
+                         filtering_stats["total_jobs_analyzed"] += 1
 
-                        full_text = (title + "\n" + loc + "\n" + desc).strip()
-                        quals = quals_extractor.extract_comprehensive_qualifications(full_text)
+                         admin_check, reason = looks_like_health_admin(title, desc)
+                         if not admin_check:
+                             filtering_stats["filtered_out"][reason] += 1
+                             continue
+
+                         # Check if job is in US (allow all US states, filter international)
+                         state = infer_state(loc)
+                         if not state or state not in TARGET_STATES:
+                             filtering_stats["filtered_out"]["non_us_locations"] += 1
+                             continue
+
+                         full_text_for_pay = (title + "\n" + loc + "\n" + desc).strip()
+                         pay_hr, pay_raw = normalize_pay_to_hourly(full_text_for_pay)
+                         track = infer_career_track(title + "\n" + desc)
+                         entry = entry_level_flag(title, desc)
+
+                         full_text = (title + "\n" + loc + "\n" + desc).strip()
+                         quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
                         # GH provides updated_at / created_at but not close date
                         created = parse_date(j.get("created_at"))

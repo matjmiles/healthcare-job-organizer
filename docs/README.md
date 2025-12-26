@@ -23,6 +23,9 @@ An intelligent healthcare job collection and filtering system that automatically
 - **🔧 Modular Design**: Education filtering logic embedded in Excel generation for flexible output control
 - **📝 Enhanced Bullet Formatting**: Improved qualification bullet logic with multi-marker support and intelligent text splitting
 - **🔍 Extended Testing**: Qualification testing expanded to 10 jobs with detailed row indexing
+- **💰 Advanced Pay Processing**: Enhanced pay extraction with comprehensive text analysis and URL-based scraping
+- **🔍 Multi-Source Pay Detection**: Combined title, location, and description text for improved pay pattern matching
+- **🤖 Pay Update Scripts**: Automated tools for retroactive pay extraction from existing job data
 
 ### Version 2.2 - Excel Enhancement Update
 - **📎 Hyperlinked Source Files**: Source File column URLs now clickable with professional blue styling 
@@ -49,9 +52,11 @@ An intelligent healthcare job collection and filtering system that automatically
   - `education_filter_js.js`: Advanced education requirement analysis (JavaScript implementation)
   - `extract_job.js`: Manual browser console extraction for single jobs
 - `hc_jobs_pipeline/`: Python-based automated job collection pipeline
-  - `run_collect.py`: Main collection script with comprehensive filtering
+  - `run_collect.py`: Main collection script with comprehensive filtering and enhanced pay extraction
   - `education_filters.py`: Sophisticated bachelor's degree requirement analysis
   - `employers.json`: Configured ATS endpoints for 14+ healthcare organizations
+  - `update_pay.py`: Retroactive pay extraction tool for existing job data
+  - `update_pay_from_urls.py`: Advanced URL-based pay scraping for comprehensive coverage
 - `data/`: Structured data storage
   - `html/`: Saved Indeed job pages for manual processing
   - `json/`: Individual job files and consolidated datasets
@@ -110,6 +115,25 @@ pip install -r requirements.txt
    - Maintains full data collection in JSON files
    - Applies education criteria filtering specifically for Excel output
    - Console shows filtering statistics: original count → filtered count
+
+### 🔧 **Pay Data Enhancement (Optional)**
+
+1. **Retroactive pay extraction** from existing data:
+   ```bash
+   cd hc_jobs_pipeline
+   python update_pay.py
+   ```
+   Updates jobs with "N/A" pay by re-analyzing job descriptions with enhanced patterns
+
+2. **URL-based pay scraping** for maximum coverage:
+   ```bash
+   cd hc_jobs_pipeline
+   python update_pay_from_urls.py
+   ```
+   Fetches original job URLs to extract salary information directly from source pages
+   - Includes rate limiting and error handling for respectful scraping
+   - Only updates jobs with reasonable pay values (≥$10/hr)
+   - Provides detailed progress logging
 
 ### 📂 Manual HTML Processing
 
@@ -190,7 +214,16 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Format Standardization**: Consistent pay format across all data sources
 - **Edge Case Handling**: Manages incomplete salary information gracefully
 
-### 🔧 Advanced Bullet Point Processing
+### � Enhanced Pay Normalization
+- **Comprehensive Pattern Matching**: Detects hourly ($X/hr), annual ($X/year), salary ranges, and "between" formats
+- **Multi-Source Text Analysis**: Combines job title, location, and description for maximum pay detection coverage
+- **Advanced Regex Patterns**: Includes "salary range", "starting at", "up to" patterns with decimal and comma support
+- **Quality Control**: Filters out unrealistic pay values (e.g., <$10/hr) to maintain data integrity
+- **URL-Based Extraction**: Fetches original job pages when initial extraction fails for comprehensive coverage
+- **Retroactive Processing**: update_pay.py and update_pay_from_urls.py scripts for improving existing datasets
+- **Annual-to-Hourly Conversion**: Standard 2080 hours/year conversion with proper rounding
+
+### �🔧 Advanced Bullet Point Processing
 - **Multi-Marker Recognition**: Detects bullets (•), hyphens (-), and asterisks (*) as list indicators
 - **Intelligent Text Splitting**: Automatically breaks long qualification blocks (>100 chars) at sentence boundaries
 - **Numbered List Parsing**: Recognizes "1.", "2." patterns and converts to bullet format
@@ -206,6 +239,9 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Excel-Level Education Filtering**: meetsEducationCriteria() function filters jobs at Excel generation
 - **Selective Output Control**: Maintains full data collection with targeted bachelor's degree Excel reporting
 - **Advanced Bullet Formatting**: Multi-marker bullet detection (•, -, *) with intelligent text splitting for long qualifications
+- **Enhanced Pay Extraction**: Multi-source text analysis combining title, location, and job description for comprehensive salary detection
+- **Retroactive Pay Processing**: Automated scripts for updating existing job data with missing salary information
+- **URL-Based Pay Scraping**: Direct fetching from job source URLs for accurate compensation data when initial extraction fails
 - **Date Standardization**: Automatic conversion of timestamps to MM-DD-YYYY format for Excel consistency
 - **Dual Excel Libraries**: xlsx-populate for advanced styling features with XLSX fallback for compatibility testing
 - **Hyperlink Integration**: Automatic URL detection and styling for Source File column links
