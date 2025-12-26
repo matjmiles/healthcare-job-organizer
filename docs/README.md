@@ -1,25 +1,26 @@
 # Healthcare Administration Job Postings Organizer
 
-An intelligent healthcare job collection and filtering system that automatically identifies bachelor's-level healthcare administration positions from multiple sources across the entire United States. Features comprehensive education filtering, pay normalization, unified data processing, regional analysis, and detailed filtering analytics.
+An intelligent healthcare job collection and filtering system that automatically identifies healthcare administration positions from multiple sources across the entire United States. Features **relaxed education filtering** for broader entry-level coverage, pay normalization, unified data processing, regional analysis, and detailed filtering analytics.
 
 ## Key Features
 
-- **🎓 Advanced Education Filtering**: Automatically excludes jobs requiring only high school diplomas or associate degrees, focusing exclusively on bachelor's-level positions (97% filtering effectiveness)
-- **🌎 Nationwide Coverage**: Expanded from western states to all 50 US states with US Census Bureau regional classification
-- **📊 Filtering Analytics**: Comprehensive statistics tracking with detailed breakdown of why jobs were filtered out
+- **🎓 Flexible Education Filtering**: **NEW RELAXED APPROACH** - Includes high school, associates, certificate, and bachelor's level positions while excluding only advanced degrees and senior executive roles (**27.7% inclusion rate** vs previous 0.9%)
+- **🌎 Nationwide Coverage**: All 50 US states with US Census Bureau regional classification (Northeast, Midwest, South, West)
+- **📊 Comprehensive Results**: **417 healthcare admin jobs** nationwide (vs. previous 13 jobs with strict filtering)
 - **💰 Pay Normalization**: Converts all salary ranges to standardized hourly rates for easy comparison
 - **🔗 Source Tracking**: Preserves original job URLs and tracks data source metadata
 - **📈 Rich Metadata**: Includes state detection, regional classification, remote work flags, career track classification, and entry-level identification
 - **📁 Dual Collection Methods**: Automated ATS API collection + manual HTML file processing
 - **📋 Automated Reporting**: Timestamped Markdown reports with historical tracking and filtering effectiveness metrics
 
-## Recent Enhancements
+## Recent Major Enhancements (December 2025)
 
-- **US-Wide Expansion**: Now targets all 50 states + DC instead of just 8 western states
-- **Regional Analysis**: Added US Census Bureau regional classification (Northeast, Midwest, South, West)
-- **Enhanced Schema**: Added `region` column to job data structure alongside existing `state` column
-- **Updated Filtering**: Changed from western state filtering to non-US location filtering
-- **Comprehensive Coverage**: Maintains same filtering quality (1% inclusion rate) while dramatically expanding geographic scope
+- **🎯 BREAKTHROUGH: Relaxed Education Filter** - Increased job results by **32x** (from 13 to 417 jobs)
+- **📚 Education Inclusivity**: Now accepts high school + experience, associates degrees, certificates, and "bachelor's preferred" positions
+- **🚫 Smart Exclusions**: Only filters out advanced degrees (Master's+) and senior executive positions requiring 10+ years experience
+- **📊 Improved Filtering Stats**: Education requirements now filter only **1.8%** of jobs (vs previous 54.6%)
+- **🏢 24 Validated Employers**: Expanded employer database with comprehensive validation system
+- **🌎 True Nationwide Coverage**: 417 jobs across 26 states representing all major regions
 
 ## Project Structure
 
@@ -61,15 +62,17 @@ pip install -r requirements.txt
 
 ### 🚀 Automated ATS Collection (Recommended)
 
-1. **Run the Python pipeline**: Automatically collects jobs from 14+ healthcare organizations
+1. **Run the Python pipeline**: Automatically collects jobs from 24 healthcare organizations
    ```bash
    cd hc_jobs_pipeline
    python run_collect.py
    ```
    - Targets all 50 US states + DC with regional classification
-   - Applies bachelor's degree filtering (typical result: ~6-20 qualified jobs from 600+ total)
+   - Applies **relaxed education filtering** (typical result: **~417 qualified jobs** from 1,500+ total analyzed)
+   - Includes high school, associates, certificate, and bachelor's level positions
+   - Excludes only advanced degrees and senior executive roles
    - Outputs to `hc_jobs_pipeline/output/healthcare_admin_jobs_us_nationwide.json`
-   - Generates detailed filtering statistics in `filtering_stats.json`
+   - Generates detailed filtering statistics showing **27.7% inclusion rate**
 
 2. **Generate comprehensive report**:
    ```bash
@@ -99,18 +102,17 @@ pip install -r requirements.txt
    - Processes pay information and normalizes to hourly rates
 3. **Generate Excel**: Same as automated method above
 
-### 🎯 Education Filtering Results
-- **Filtering Effectiveness**: 98-99% of jobs excluded (varies by employer and market conditions)
-- **Typical Filtering Breakdown**:
-  - Clinical Roles (RN, MD, etc.): ~48% of total jobs
-  - Education Requirements (non-bachelor's): ~46% of total jobs
-  - No Admin Keywords: ~3% of total jobs
-  - Non-US Locations: ~2% of total jobs
-- **Target Jobs**: Bachelor's degree required in healthcare administration, management, or related fields
-- **Excluded**: High school diploma, associate degree, advanced degree requirements, or "experience in lieu of degree" positions
-- **Advanced Scoring**: Weighted algorithm considers context, requirements vs. preferences, and healthcare-specific degree programs
-- **Overqualified Exclusion**: Master's, PhD, and other advanced degree requirements automatically excluded
-- **Statistical Tracking**: Comprehensive analytics showing exactly why jobs were filtered out for continuous improvement
+### 🎯 Education Filtering Results (NEW RELAXED APPROACH)
+- **Filtering Effectiveness**: **27.7% inclusion rate** (417 jobs included from 1,504 analyzed)
+- **Filtering Breakdown**:
+  - Clinical Roles (RN, MD, etc.): ~40.9% of total jobs
+  - **Education Requirements: ONLY 1.8%** (vs previous 54.6% - major improvement!)
+  - No Admin Keywords: ~2.6% of total jobs  
+  - Non-US Locations: ~27.0% of total jobs
+- **Included Jobs**: High school + experience, associates degrees, certificates, bachelor's degrees, and "bachelor's preferred" positions
+- **Excluded Jobs**: Only Master's/PhD requirements and senior executive positions (10+ years experience)
+- **Geographic Distribution**: 417 jobs across 26 states in all US regions
+- **Top Employers**: Pyramid Healthcare (236 jobs), Charlie Health (113 jobs), plus 22 other organizations
 
 ### 📊 Comprehensive Data Schema
 - **Core Information**: `jobTitle`, `company`, `city`, `jobDescription`, `qualifications`

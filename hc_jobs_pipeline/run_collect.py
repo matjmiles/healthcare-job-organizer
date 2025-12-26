@@ -11,6 +11,7 @@ from rapidfuzz import fuzz
 
 # Import our education filtering logic
 from education_filters import meets_bachelors_requirement, analyze_education_requirements
+from relaxed_education_filters import meets_relaxed_education_requirement
 
 # US Census Bureau regions and states
 US_REGIONS = {
@@ -330,8 +331,8 @@ def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
     if not admin_check:
         return False, "no_admin_keywords"
     
-    # NEW: Check education requirements - must require bachelor's degree
-    education_check = meets_bachelors_requirement(text or "")
+    # NEW: Check education requirements - use relaxed filter for broader results
+    education_check = meets_relaxed_education_requirement(text or "")
     
     if not education_check:
         return False, "education_requirements"

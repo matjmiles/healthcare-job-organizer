@@ -1,12 +1,31 @@
-# Healthcare Admin Job Collector (No-bot-blocker strategy)
+# Healthcare Admin Job Collector (Nationwide Coverage)
 
-This collector pulls postings from public ATS APIs:
+This collector pulls postings from public ATS APIs across **all 50 US states**:
 - Lever: https://api.lever.co/v0/postings/{slug}?mode=json
 - Greenhouse: https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true
 
+## NEW: Relaxed Education Filtering (December 2025)
+
+**MAJOR UPDATE**: Switched from strict bachelor's-only filtering to **relaxed education filtering** that dramatically increased results from **13 to 417 jobs nationwide** (32x improvement).
+
+**Education Inclusion Criteria**:
+- ✅ High school diploma + relevant experience
+- ✅ Associates degree positions  
+- ✅ Certificate programs
+- ✅ Bachelor's degree required OR preferred
+- ✅ No specific education requirements (experience-based)
+
+**Education Exclusion Criteria** (Only these are filtered out):
+- ❌ Master's degree required (overqualified positions)
+- ❌ PhD/Doctoral degree required
+- ❌ Senior executive positions (CEO, VP, etc.)
+- ❌ Positions requiring 10+ years experience
+
 ## Filtering Logic
 
-**Geographic Filtering**: ID, WA, OR, UT, WY, MT, CO, AZ
+**Geographic Coverage**: **All 50 US states + DC** with regional classification (Northeast, Midwest, South, West)
+
+**Results**: **417 healthcare admin jobs** from **24 validated employers**
 
 **Title Inclusion Keywords**: coordinator, representative, specialist, assistant, associate, clerk, scheduler, scheduling, patient access, registration, referral, prior auth, authorization, front desk, unit clerk, medical receptionist, office, admin, administrator in training, ait
 
@@ -34,8 +53,16 @@ This collector pulls postings from public ATS APIs:
    py run_collect.py
 
 ## Output
-- output/healthcare_admin_jobs_west_100plus.json
+- **output/healthcare_admin_jobs_us_nationwide.json** (417 jobs across all 50 states)
 - output/errors.json
+- **Comprehensive filtering statistics** with breakdown showing 27.7% inclusion rate
+
+## Key Statistics (Latest Run)
+- **Total Jobs Analyzed**: 1,504
+- **Jobs Included**: 417 (27.7% inclusion rate) 
+- **Geographic Coverage**: 26 states across all US regions
+- **Top States**: PA (109), CA (37), NY (33), NC (31), VA (26)
+- **Top Employers**: Pyramid Healthcare (236), Charlie Health (113)
 
 ## Notes
 - Most ATS APIs do not provide closing dates. `date` is null.
