@@ -269,13 +269,14 @@ def in_scope_state(location: str) -> bool:
         return True
     return st in TARGET_STATES
 
-def looks_like_health_admin(title: str, text: str) -> bool:
+def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
+    """Check if job looks like health admin role. Returns (passes, reason)."""
     # Include admin-support roles; exclude obviously clinical roles
     combined = (title + "\n" + (text or "")).lower()
 
     # Exclude clinical-heavy roles by keyword
     if re.search(r"\bregistered nurse\b|\brn\b|\bnurse practitioner\b|\bnp\b|\bphysician\b|\bmd\b|\bpharm\b|\btherapist\b", combined):
-        return False
+        return False, "clinical_roles"
 
     # Require at least one admin-ish hint
     admin_hints = [
@@ -287,12 +288,15 @@ def looks_like_health_admin(title: str, text: str) -> bool:
     admin_check = any(h in combined for h in admin_hints)
     
     if not admin_check:
-        return False
+        return False, "no_admin_keywords"
     
     # NEW: Check education requirements - must require bachelor's degree
     education_check = meets_bachelors_requirement(text or "")
     
-    return education_check
+    if not education_check:
+        return False, "education_requirements"
+    
+    return True, "passes"
 
 async def collect() -> None:
     root = Path(__file__).resolve().parent
@@ -308,6 +312,20 @@ async def collect() -> None:
 
     results: List[Dict[str, Any]] = []
     errors: List[Dict[str, Any]] = []
+    
+    # Track filtering statistics
+    filtering_stats = {
+        "total_jobs_analyzed": 0,
+        "filtered_out": {
+            "clinical_roles": 0,
+            "no_admin_keywords": 0,
+            "education_requirements": 0,
+            "out_of_scope_states": 0
+        },
+        "final_jobs_included": 0,
+        "duplicates_removed": 0,
+        "timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    }
 
     async with httpx.AsyncClient(headers=headers, follow_redirects=True) as client:
         for emp in employers:
@@ -323,9 +341,16 @@ async def collect() -> None:
                         url = j.get("hostedUrl") or ""
                         loc = lever_location(j)
                         desc = lever_description(j)
-                        if not looks_like_health_admin(title, desc):
+                        
+                        # Track all jobs analyzed
+                        filtering_stats["total_jobs_analyzed"] += 1
+                        
+                        admin_check, reason = looks_like_health_admin(title, desc)
+                        if not admin_check:
+                            filtering_stats["filtered_out"][reason] += 1
                             continue
                         if not in_scope_state(loc):
+                            filtering_stats["filtered_out"]["out_of_scope_states"] += 1
                             continue
 
                         pay_hr, pay_raw = normalize_pay_to_hourly(desc)
@@ -334,6 +359,9 @@ async def collect() -> None:
 
                         full_text = (title + "\n" + loc + "\n" + desc).strip()
                         quals = extract_qualifications(full_text)
+
+                        # This job passed all filters
+                        filtering_stats["final_jobs_included"] += 1
 
                         results.append({
                             "jobTitle": clean_text_field(title),
@@ -359,9 +387,16 @@ async def collect() -> None:
                         url = j.get("absolute_url") or ""
                         loc = gh_location(j)
                         desc = gh_description(j)
-                        if not looks_like_health_admin(title, desc):
+                        
+                        # Track all jobs analyzed
+                        filtering_stats["total_jobs_analyzed"] += 1
+                        
+                        admin_check, reason = looks_like_health_admin(title, desc)
+                        if not admin_check:
+                            filtering_stats["filtered_out"][reason] += 1
                             continue
                         if not in_scope_state(loc):
+                            filtering_stats["filtered_out"]["out_of_scope_states"] += 1
                             continue
 
                         pay_hr, pay_raw = normalize_pay_to_hourly(desc)
@@ -374,6 +409,9 @@ async def collect() -> None:
                         # GH provides updated_at / created_at but not close date
                         created = parse_date(j.get("created_at"))
                         updated = parse_date(j.get("updated_at"))
+
+                        # This job passed all filters
+                        filtering_stats["final_jobs_included"] += 1
 
                         results.append({
                             "jobTitle": clean_text_field(title),
@@ -405,14 +443,23 @@ async def collect() -> None:
         dedup[key] = r
     final = list(dedup.values())
 
+    # Update final stats after deduplication
+    filtering_stats["final_jobs_included"] = len(final)
+    filtering_stats["duplicates_removed"] = len(results) - len(final)
+
     # Write outputs
     out_json = out_dir / "healthcare_admin_jobs_west_100plus.json"
     out_json.write_text(json.dumps(final, indent=2, ensure_ascii=False), encoding="utf-8")
 
     out_err = out_dir / "errors.json"
     out_err.write_text(json.dumps(errors, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    # Write filtering statistics
+    out_stats = out_dir / "filtering_stats.json"
+    out_stats.write_text(json.dumps(filtering_stats, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"Saved {len(final)} jobs to: {out_json}")
+    print(f"Filtering stats: {filtering_stats['total_jobs_analyzed']} analyzed, {len(final)} included")
     if errors:
         print(f"Encountered {len(errors)} employer errors. See: {out_err}")
 

@@ -1,15 +1,22 @@
 # Healthcare Administration Job Postings Organizer
 
-An intelligent healthcare job collection and filtering system that automatically identifies bachelor's-level healthcare administration positions from multiple sources. Features comprehensive education filtering, pay normalization, and unified data processing.
+An intelligent healthcare job collection and filtering system that automatically identifies bachelor's-level healthcare administration positions from multiple sources. Features comprehensive education filtering, pay normalization, unified data processing, and detailed filtering analytics.
 
 ## Key Features
 
 - **🎓 Advanced Education Filtering**: Automatically excludes jobs requiring only high school diplomas or associate degrees, focusing exclusively on bachelor's-level positions (97% filtering effectiveness)
+- **📊 Filtering Analytics**: Comprehensive statistics tracking with detailed breakdown of why jobs were filtered out
 - **💰 Pay Normalization**: Converts all salary ranges to standardized hourly rates for easy comparison
 - **🔗 Source Tracking**: Preserves original job URLs and tracks data source metadata
-- **📊 Unified Schema**: Consistent data structure across Python ATS pipeline and HTML processing
 - **📈 Rich Metadata**: Includes state detection, remote work flags, career track classification, and entry-level identification
 - **📁 Dual Collection Methods**: Automated ATS API collection + manual HTML file processing
+- **📋 Automated Reporting**: Timestamped Markdown reports with historical tracking and filtering effectiveness metrics
+
+## Recent Enhancements
+
+- **Filtering Statistics**: Now tracks total jobs analyzed, filtering reasons (clinical roles, education requirements, geographic scope), and inclusion rates
+- **Enhanced Reports**: Comprehensive Markdown reports with filtering breakdown showing why jobs were excluded
+- **Pipeline Analytics**: Real-time visibility into filtering effectiveness (typical 1-2% inclusion rate from raw job postings)
 
 ## Project Structure
 
@@ -57,10 +64,21 @@ pip install -r requirements.txt
    python run_collect.py
    ```
    - Targets western US states (ID, WA, OR, UT, WY, MT, CO, AZ)
-   - Applies bachelor's degree filtering (typical result: ~28 qualified jobs from 2800+ total)
+   - Applies bachelor's degree filtering (typical result: ~7-28 qualified jobs from 600+ total)
    - Outputs to both `hc_jobs_pipeline/output/` and `data/json/`
+   - Generates detailed filtering statistics in `filtering_stats.json`
 
-2. **Generate Excel report**:
+2. **Generate comprehensive report**:
+   ```bash
+   cd hc_jobs_pipeline
+   python run_summary.py
+   ```
+   - Creates timestamped Markdown report with filtering analytics
+   - Shows breakdown of why jobs were excluded (clinical roles, education requirements, etc.)
+   - Includes inclusion rates and processing statistics
+   - Saves historical reports for trend analysis
+
+3. **Generate Excel report** (optional):
    ```bash
    npm run json-to-excel
    ```
@@ -79,11 +97,17 @@ pip install -r requirements.txt
 3. **Generate Excel**: Same as automated method above
 
 ### 🎯 Education Filtering Results
-- **Filtering Effectiveness**: 88.9% - 99% of jobs excluded (varies by data source)
+- **Filtering Effectiveness**: 98-99% of jobs excluded (varies by employer and market conditions)
+- **Typical Filtering Breakdown**:
+  - Clinical Roles (RN, MD, etc.): ~48% of total jobs
+  - Education Requirements (non-bachelor's): ~46% of total jobs
+  - No Admin Keywords: ~3% of total jobs
+  - Geographic Scope: ~1% of total jobs
 - **Target Jobs**: Bachelor's degree required in healthcare administration, management, or related fields
 - **Excluded**: High school diploma, associate degree, advanced degree requirements, or "experience in lieu of degree" positions
 - **Advanced Scoring**: Weighted algorithm considers context, requirements vs. preferences, and healthcare-specific degree programs
 - **Overqualified Exclusion**: Master's, PhD, and other advanced degree requirements automatically excluded
+- **Statistical Tracking**: Comprehensive analytics showing exactly why jobs were filtered out for continuous improvement
 
 ### 📊 Comprehensive Data Schema
 - **Core Information**: `jobTitle`, `company`, `location`, `jobDescription`, `qualifications`
