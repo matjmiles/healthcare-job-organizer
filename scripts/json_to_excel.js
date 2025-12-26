@@ -1,4 +1,5 @@
 const XLSX = require('xlsx');
+const XlsxPopulate = require('xlsx-populate');
 const fs = require('fs');
 const path = require('path');
 
@@ -98,83 +99,92 @@ jobs.forEach(job => {
    ]);
  });
 
-// Create workbook
-const wb = XLSX.utils.book_new();
-const ws = XLSX.utils.aoa_to_sheet(data);
+// Create workbook using xlsx-populate for better style support
+(async () => {
+  const workbook = await XlsxPopulate.fromBlankAsync();
+  const sheet = workbook.sheet(0);
+  sheet.name('Jobs');
 
-// Set column widths for better readability
-const colWidths = [
-  { wch: 40 }, // Job Title
-  { wch: 25 }, // Company  
-  { wch: 20 }, // City
-  { wch: 8 },  // State
-  { wch: 12 }, // Region
-  { wch: 50 }, // Job Description
-  { wch: 60 }, // Qualifications - wider for multi-line content
-  { wch: 15 }, // Pay
-  { wch: 12 }, // Date
-  { wch: 10 }, // Remote Flag
-  { wch: 15 }, // Source Platform
-  { wch: 20 }, // Career Track
-  { wch: 12 }, // Entry Level Flag
-  { wch: 20 }, // Collected At
-  { wch: 50 }  // Source File
-];
-ws['!cols'] = colWidths;
+  // Set data
+  data.forEach((row, rowIndex) => {
+    row.forEach((cellValue, colIndex) => {
+      sheet.cell(rowIndex + 1, colIndex + 1).value(cellValue);
+    });
+  });
 
-// Enable text wrapping for all cells and set row heights
-const range = XLSX.utils.decode_range(ws['!ref']);
-for (let R = range.s.r; R <= range.e.r; ++R) {
-  // Set row height for data rows (not header)
-  if (R > 0) {
-    if (!ws['!rows']) ws['!rows'] = [];
-    ws['!rows'][R] = { hpt: 60 }; // Set height to accommodate multi-line content
-  }
-  
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-    if (!ws[cellAddress]) continue;
-    
-    // Set cell style for text wrapping
-    ws[cellAddress].s = {
-      alignment: {
-        wrapText: true,
-        vertical: 'top'
-      }
-    };
-    
-    // Special formatting for qualifications column (index 6)
-    if (C === 6 && ws[cellAddress].v) {
-      // Ensure proper line breaks in qualifications
-      ws[cellAddress].v = ws[cellAddress].v.toString().replace(/\r\n/g, '\n');
+  // Set column widths
+  sheet.column(1).width(40); // Job Title
+  sheet.column(2).width(25); // Company
+  sheet.column(3).width(20); // City
+  sheet.column(4).width(8);  // State
+  sheet.column(5).width(12); // Region
+  sheet.column(6).width(50); // Job Description
+  sheet.column(7).width(60); // Qualifications
+  sheet.column(8).width(15); // Pay
+  sheet.column(9).width(12); // Date
+  sheet.column(10).width(10); // Remote Flag
+  sheet.column(11).width(15); // Source Platform
+  sheet.column(12).width(20); // Career Track
+  sheet.column(13).width(12); // Entry Level Flag
+  sheet.column(14).width(20); // Collected At
+  sheet.column(15).width(50); // Source File
+
+  // Set text wrapping and row heights
+  for (let row = 1; row <= data.length; row++) {
+    if (row > 1) {
+      sheet.row(row).height(60); // Set height for data rows
+    }
+    for (let col = 1; col <= data[0].length; col++) {
+      const cell = sheet.cell(row, col);
+      cell.style('wrapText', true);
+      cell.style('verticalAlignment', 'top');
     }
   }
-}
 
-XLSX.utils.book_append_sheet(wb, ws, 'Jobs');
+  // Add hyperlinks with styling to Source File column (column 15, 1-based)
+  for (let row = 2; row <= data.length; row++) { // Skip header
+    const sourceFile = data[row - 1][14];
+    if (sourceFile && sourceFile !== 'N/A' && sourceFile.startsWith('http')) {
+      const cell = sheet.cell(row, 15);
+      cell.hyperlink(sourceFile).style({
+        fontColor: '0563C1', // Blue color
+        underline: true
+      });
+    }
+  }
 
-// Generate timestamp for filename
-const now = new Date();
-const timestamp = now.toISOString()
-  .replace(/:/g, '-')        // Replace colons with hyphens for Windows compatibility
-  .replace(/\..+/, '')       // Remove milliseconds
-  .replace('T', '_');        // Replace T with underscore for readability
+  // Generate timestamp for filename
+  const now = new Date();
+  const timestamp = now.toISOString()
+    .replace(/:/g, '-')        // Replace colons with hyphens for Windows compatibility
+    .replace(/\..+/, '')       // Remove milliseconds
+    .replace('T', '_');        // Replace T with underscore for readability
 
-const filename = `output/jobs_consolidated_${timestamp}.xlsx`;
+  const filename = `output/jobs_consolidated_${timestamp}.xlsx`;
 
-// Write to file
-XLSX.writeFile(wb, filename);
+  // Write to file
+  await workbook.toFileAsync(filename);
 
-console.log(`Excel file created: ${filename} with ${jobs.length} job entries`);
+  console.log(`Excel file created: ${filename} with ${jobs.length} job entries`);
 
-// Test the formatting by reading back first few qualifications
-const testWb = XLSX.readFile(filename);
-const testWs = testWb.Sheets[testWb.SheetNames[0]];
-const testData = XLSX.utils.sheet_to_json(testWs, { header: 1 });
+  // Test the formatting by reading back with XLSX for verification
+  const testWb = XLSX.readFile(filename);
+  const testWs = testWb.Sheets[testWb.SheetNames[0]];
+  const testData = XLSX.utils.sheet_to_json(testWs, { header: 1 });
 
-console.log('\nTesting qualifications formatting for first 3 jobs:');
-for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
-  const qualIndex = 6; // Qualifications column index (0-based: 0=title,1=company,2=city,3=state,4=region,5=desc,6=qual,...)
-  const qual = testData[i][qualIndex] || 'N/A';
-  console.log(`Job ${i} qualifications:\n"${qual}"\n`);
-}
+  console.log('\nTesting qualifications formatting for first 3 jobs:');
+  for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
+    const qualIndex = 6;
+    const qual = testData[i][qualIndex] || 'N/A';
+    console.log(`Job ${i} qualifications:\n"${qual}"\n`);
+  }
+
+  console.log('Testing hyperlinks in Source File column for first 3 jobs:');
+  for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
+    const sourceIndex = 14;
+    const sourceFile = testData[i][sourceIndex] || 'N/A';
+    const cellRef = XLSX.utils.encode_cell({ r: i, c: 14 });
+    const hasLink = testWs[cellRef] && testWs[cellRef].l ? 'Yes' : 'No';
+    console.log(`Job ${i} Source File: ${sourceFile} (Hyperlink: ${hasLink})`);
+  }
+})();

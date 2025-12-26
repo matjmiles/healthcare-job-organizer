@@ -15,6 +15,13 @@ An intelligent healthcare job collection and filtering system that automatically
 
 ## Recent Major Enhancements (December 2025)
 
+### Version 2.2 - Excel Enhancement Update
+- **📎 Hyperlinked Source Files**: Source File column URLs now clickable with professional blue styling 
+- **📦 xlsx-populate Integration**: Added second Excel library for advanced formatting capabilities
+- **🎨 Enhanced Styling**: Improved cell formatting, text wrapping, and optimal column/row sizing
+- **✨ Format Verification**: Built-in testing confirms hyperlinks and qualification formatting
+
+### Version 2.1 - Education Filter Breakthrough
 - **🎯 BREAKTHROUGH: Relaxed Education Filter** - Increased job results by **32x** (from 13 to 417 jobs)
 - **📚 Education Inclusivity**: Now accepts high school + experience, associates degrees, certificates, and "bachelor's preferred" positions
 - **🚫 Smart Exclusions**: Only filters out advanced degrees (Master's+) and senior executive positions requiring 10+ years experience
@@ -39,7 +46,7 @@ An intelligent healthcare job collection and filtering system that automatically
   - `html/`: Saved Indeed job pages for manual processing
   - `json/`: Individual job files and consolidated datasets
 - `output/`: Generated Excel files with timestamp-based naming
-- `package.json`: Dependencies for HTML parsing, Excel generation, and data processing
+- `package.json`: Dependencies for HTML parsing, Excel generation (XLSX + xlsx-populate), and data processing
 
 ## Setup
 
@@ -124,7 +131,12 @@ pip install -r requirements.txt
 
 ### 📈 Excel Output (14 Columns)
 Generated files include: Job Title, Company, Location, Job Description, Qualifications, Pay, Date, State, Remote Flag, Source Platform, Career Track, Entry Level Flag, Collected At, Source File
-
+**Enhanced Excel Features:**
+- **Hyperlinked Source Files**: URLs in Source File column are clickable links with professional blue styling
+- **Optimized Formatting**: Text wrapping, proper row heights (60px), and column widths for readability
+- **Bullet Point Formatting**: Qualifications displayed with proper bullet points and line breaks
+- **Dual Library Architecture**: Uses xlsx-populate for advanced styling with XLSX fallback for testing
+- **Format Verification**: Built-in testing displays sample qualifications and confirms hyperlink functionality
 ### Manual Extraction (Single Job)
 
 1. Open job URL in browser.
@@ -167,6 +179,8 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **URL Extraction**: Recovers original job URLs from HTML metadata instead of local file paths
 - **Schema Unification**: Identical data structure between Python ATS and HTML processing pipelines
 - **Field Optimization**: Eliminated redundant pay fields while maintaining comprehensive metadata
+- **Dual Excel Libraries**: xlsx-populate for advanced styling features with XLSX fallback for compatibility testing
+- **Hyperlink Integration**: Automatic URL detection and styling for Source File column links
 
 ### 📊 Source Integration
 - **ATS API Support**: Lever and Greenhouse platforms with 14+ configured employers
