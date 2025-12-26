@@ -16,7 +16,7 @@ def load_job_data():
     jobs = []
     
     # Load from pipeline output
-    pipeline_file = "output/healthcare_admin_jobs_west_100plus.json"
+    pipeline_file = "output/healthcare_admin_jobs_us_nationwide.json"
     if os.path.exists(pipeline_file):
         try:
             with open(pipeline_file, 'r', encoding='utf-8') as f:
@@ -102,7 +102,7 @@ def add_filtering_analysis(output_lines):
             'clinical_roles': 'Clinical Roles (RN, MD, etc.)',
             'no_admin_keywords': 'No Admin Keywords',
             'education_requirements': 'Education Requirements',
-            'out_of_scope_states': 'Out of Scope States'
+            'non_us_locations': 'Non-US Locations'
         }
         
         for reason, count in filtered_out.items():
@@ -176,6 +176,22 @@ def analyze_jobs(jobs, output_lines):
     output_lines.append("|----------------|-------|")
     for state, count in states.most_common():
         output_lines.append(f"| {state} | {count} |")
+    output_lines.append("")
+    
+    # Count by region
+    regions = Counter()
+    for job in jobs:
+        if job.get('remoteFlag', False):
+            regions['Remote'] += 1
+        else:
+            region = job.get('region', 'Unknown')
+            regions[region] += 1
+    
+    output_lines.append(f"### 🌎 Jobs by US Region")
+    output_lines.append("| Region | Count |")
+    output_lines.append("|--------|-------|")
+    for region, count in regions.most_common():
+        output_lines.append(f"| {region} | {count} |")
     output_lines.append("")
     
     # Count by job title (simplified)

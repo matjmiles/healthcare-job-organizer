@@ -12,7 +12,26 @@ from rapidfuzz import fuzz
 # Import our education filtering logic
 from education_filters import meets_bachelors_requirement, analyze_education_requirements
 
-TARGET_STATES = {"ID", "WA", "OR", "UT", "WY", "MT", "CO", "AZ"}
+# US Census Bureau regions and states
+US_REGIONS = {
+    "Northeast": {"ME", "NH", "VT", "MA", "RI", "CT", "NY", "NJ", "PA"},
+    "Midwest": {"OH", "IN", "IL", "MI", "WI", "MN", "IA", "MO", "ND", "SD", "NE", "KS"},
+    "South": {"DE", "MD", "DC", "VA", "WV", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LA", "OK", "TX"},
+    "West": {"MT", "ID", "WY", "CO", "NM", "AZ", "UT", "NV", "WA", "OR", "CA", "AK", "HI"}
+}
+
+# All US states and territories for target filtering
+TARGET_STATES = set()
+for region_states in US_REGIONS.values():
+    TARGET_STATES.update(region_states)
+
+def get_state_region(state_code: str) -> str:
+    """Get the US Census region for a given state code."""
+    state_code = state_code.upper().strip()
+    for region, states in US_REGIONS.items():
+        if state_code in states:
+            return region
+    return "Unknown"
 
 ENTRY_LEVEL_TITLE_HINTS = [
     "coordinator", "representative", "specialist", "assistant", "associate",
@@ -320,7 +339,7 @@ async def collect() -> None:
             "clinical_roles": 0,
             "no_admin_keywords": 0,
             "education_requirements": 0,
-            "out_of_scope_states": 0
+            "non_us_locations": 0
         },
         "final_jobs_included": 0,
         "duplicates_removed": 0,
@@ -349,8 +368,11 @@ async def collect() -> None:
                         if not admin_check:
                             filtering_stats["filtered_out"][reason] += 1
                             continue
-                        if not in_scope_state(loc):
-                            filtering_stats["filtered_out"]["out_of_scope_states"] += 1
+                        
+                        # Check if job is in US (allow all US states, filter international)
+                        state = infer_state(loc)
+                        if not state or state not in TARGET_STATES:
+                            filtering_stats["filtered_out"]["non_us_locations"] += 1
                             continue
 
                         pay_hr, pay_raw = normalize_pay_to_hourly(desc)
@@ -363,11 +385,13 @@ async def collect() -> None:
                         # This job passed all filters
                         filtering_stats["final_jobs_included"] += 1
 
+                        state = infer_state(loc)
                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
                             "location": clean_text_field(loc),
-                            "state": infer_state(loc),
+                            "state": state,
+                            "region": get_state_region(state) if state else "Unknown",
                             "remoteFlag": infer_remote_flag(loc),
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
@@ -395,8 +419,11 @@ async def collect() -> None:
                         if not admin_check:
                             filtering_stats["filtered_out"][reason] += 1
                             continue
-                        if not in_scope_state(loc):
-                            filtering_stats["filtered_out"]["out_of_scope_states"] += 1
+                        
+                        # Check if job is in US (allow all US states, filter international)
+                        state = infer_state(loc)
+                        if not state or state not in TARGET_STATES:
+                            filtering_stats["filtered_out"]["non_us_locations"] += 1
                             continue
 
                         pay_hr, pay_raw = normalize_pay_to_hourly(desc)
@@ -413,11 +440,13 @@ async def collect() -> None:
                         # This job passed all filters
                         filtering_stats["final_jobs_included"] += 1
 
+                        state = infer_state(loc)
                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
                             "location": clean_text_field(loc),
-                            "state": infer_state(loc),
+                            "state": state,
+                            "region": get_state_region(state) if state else "Unknown",
                             "remoteFlag": infer_remote_flag(loc),
                             "jobDescription": clean_text_field(desc),  # Apply HTML cleaning to job description
                             "qualifications": clean_text_field(quals),
@@ -448,7 +477,7 @@ async def collect() -> None:
     filtering_stats["duplicates_removed"] = len(results) - len(final)
 
     # Write outputs
-    out_json = out_dir / "healthcare_admin_jobs_west_100plus.json"
+    out_json = out_dir / "healthcare_admin_jobs_us_nationwide.json"
     out_json.write_text(json.dumps(final, indent=2, ensure_ascii=False), encoding="utf-8")
 
     out_err = out_dir / "errors.json"
