@@ -260,8 +260,8 @@ class QualificationsExtractor:
         if other_quals:
             formatted_parts.extend(other_quals)
         
-        # Join with bullet points and clean up
-        result = '\n• '.join(formatted_parts)
+        # Join with bullet points and clean up - add extra spacing
+        result = '\n\n• '.join(formatted_parts)
         if result and not result.startswith('•'):
             result = '• ' + result
         
