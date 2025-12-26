@@ -72,6 +72,56 @@ jobs.forEach(job => {
 // Create workbook
 const wb = XLSX.utils.book_new();
 const ws = XLSX.utils.aoa_to_sheet(data);
+
+// Set column widths for better readability
+const colWidths = [
+  { wch: 40 }, // Job Title
+  { wch: 25 }, // Company  
+  { wch: 20 }, // City
+  { wch: 8 },  // State
+  { wch: 12 }, // Region
+  { wch: 50 }, // Job Description
+  { wch: 60 }, // Qualifications - wider for multi-line content
+  { wch: 15 }, // Pay
+  { wch: 12 }, // Date
+  { wch: 10 }, // Remote Flag
+  { wch: 15 }, // Source Platform
+  { wch: 20 }, // Career Track
+  { wch: 12 }, // Entry Level Flag
+  { wch: 20 }, // Collected At
+  { wch: 50 }  // Source File
+];
+ws['!cols'] = colWidths;
+
+// Enable text wrapping for all cells and set row heights
+const range = XLSX.utils.decode_range(ws['!ref']);
+for (let R = range.s.r; R <= range.e.r; ++R) {
+  // Set row height for data rows (not header)
+  if (R > 0) {
+    if (!ws['!rows']) ws['!rows'] = [];
+    ws['!rows'][R] = { hpt: 60 }; // Set height to accommodate multi-line content
+  }
+  
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+    if (!ws[cellAddress]) continue;
+    
+    // Set cell style for text wrapping
+    ws[cellAddress].s = {
+      alignment: {
+        wrapText: true,
+        vertical: 'top'
+      }
+    };
+    
+    // Special formatting for qualifications column (index 6)
+    if (C === 6 && ws[cellAddress].v) {
+      // Ensure proper line breaks in qualifications
+      ws[cellAddress].v = ws[cellAddress].v.toString().replace(/\r\n/g, '\n');
+    }
+  }
+}
+
 XLSX.utils.book_append_sheet(wb, ws, 'Jobs');
 
 // Generate timestamp for filename
