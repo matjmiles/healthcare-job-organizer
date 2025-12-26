@@ -21,6 +21,8 @@ An intelligent healthcare job collection and filtering system that automatically
 - **📊 Filter Transparency**: Console logging shows before/after job counts for filtering effectiveness
 - **⚖️ Balanced Approach**: Maintains comprehensive data collection with targeted Excel reporting
 - **🔧 Modular Design**: Education filtering logic embedded in Excel generation for flexible output control
+- **📝 Enhanced Bullet Formatting**: Improved qualification bullet logic with multi-marker support and intelligent text splitting
+- **🔍 Extended Testing**: Qualification testing expanded to 10 jobs with detailed row indexing
 
 ### Version 2.2 - Excel Enhancement Update
 - **📎 Hyperlinked Source Files**: Source File column URLs now clickable with professional blue styling 
@@ -145,12 +147,12 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 **Enhanced Excel Features:**
 - **Hyperlinked Source Files**: URLs in Source File column are clickable links with professional blue styling
 - **Optimized Formatting**: Text wrapping, proper row heights (60px), and column widths for readability
-- **Bullet Point Formatting**: Qualifications displayed with proper bullet points and line breaks
+- **Advanced Bullet Formatting**: Multi-marker support (•, -, *) with intelligent text splitting for long qualifications
 - **Date Standardization**: Collected At timestamps formatted as MM-DD-YYYY for consistency and readability
 - **Education-Based Filtering**: Bachelor's degree requirement filtering applied at Excel generation level
 - **Filter Transparency**: Console output shows original vs filtered job counts for quality assurance
 - **Dual Library Architecture**: Uses xlsx-populate for advanced styling with XLSX fallback for testing
-- **Comprehensive Testing**: Built-in verification displays sample qualifications, hyperlinks, and date formatting
+- **Comprehensive Testing**: Built-in verification displays sample qualifications, hyperlinks, and date formatting with expanded 10-job testing sample
 ### Manual Extraction (Single Job)
 
 1. Open job URL in browser.
@@ -188,6 +190,14 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Format Standardization**: Consistent pay format across all data sources
 - **Edge Case Handling**: Manages incomplete salary information gracefully
 
+### 🔧 Advanced Bullet Point Processing
+- **Multi-Marker Recognition**: Detects bullets (•), hyphens (-), and asterisks (*) as list indicators
+- **Intelligent Text Splitting**: Automatically breaks long qualification blocks (>100 chars) at sentence boundaries
+- **Numbered List Parsing**: Recognizes "1.", "2." patterns and converts to bullet format
+- **Semicolon Processing**: Primary split on semicolons for structured qualification lists
+- **Content Optimization**: Filters out very short segments (<10 chars) to maintain quality
+- **Duplicate Bullet Prevention**: Strips existing bullet markers before applying consistent formatting
+
 ### 🔧 Data Processing Excellence
 - **HTML Stripping**: Removes all HTML tags and artifacts from job descriptions
 - **URL Extraction**: Recovers original job URLs from HTML metadata instead of local file paths
@@ -195,6 +205,7 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Field Optimization**: Eliminated redundant pay fields while maintaining comprehensive metadata
 - **Excel-Level Education Filtering**: meetsEducationCriteria() function filters jobs at Excel generation
 - **Selective Output Control**: Maintains full data collection with targeted bachelor's degree Excel reporting
+- **Advanced Bullet Formatting**: Multi-marker bullet detection (•, -, *) with intelligent text splitting for long qualifications
 - **Date Standardization**: Automatic conversion of timestamps to MM-DD-YYYY format for Excel consistency
 - **Dual Excel Libraries**: xlsx-populate for advanced styling features with XLSX fallback for compatibility testing
 - **Hyperlink Integration**: Automatic URL detection and styling for Source File column links

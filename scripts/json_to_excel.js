@@ -64,21 +64,38 @@ function formatQualifications(qualStr) {
   let parts = qualStr.split(';').map(p => p.trim()).filter(p => p);
 
   if (parts.length === 1) {
-    // If no semicolons, check if there are multiple bullets
-    const bulletCount = (qualStr.match(/•/g) || []).length;
+    // If no semicolons, check if there are multiple bullet markers
+    const bulletCount = (qualStr.match(/[-•*]/g) || []).length;
     if (bulletCount > 1) {
-      // Split by bullet and take parts after the first bullet
-      parts = qualStr.split('•').slice(1).map(p => p.trim()).filter(p => p);
-    } else if (bulletCount === 1 && !qualStr.startsWith('•')) {
+      // Split by bullet markers and take parts after the first
+      parts = qualStr.split(/[-•*]/).slice(1).map(p => p.trim()).filter(p => p);
+    } else if (bulletCount === 1 && !qualStr.match(/^[-•*]/)) {
       // Single bullet not at start, treat as one item
       parts = [qualStr];
     } else {
       // Single bullet at start or no bullets
-      parts = [qualStr.replace(/^•\s*/, '')]; // Remove leading bullet if present
+      parts = [qualStr.replace(/^[-•*]\s*/, '')]; // Remove leading bullet if present
     }
   }
 
-  // Format each part with bullet and join with newlines
+  // For long parts, split by sentence/numbered list to create multiple bullets
+  const processedParts = [];
+  for (const part of parts) {
+    if (part.length > 100) { // Split long parts
+      const subparts = part.split(/;\s*|\.\s*|\d+\.\s*/).map(p => p.trim()).filter(p => p.length > 10);
+      if (subparts.length > 1) {
+        processedParts.push(...subparts);
+      } else {
+        processedParts.push(part);
+      }
+    } else {
+      processedParts.push(part);
+    }
+  }
+  parts = processedParts;
+
+  // Ensure no leading bullets in parts and format with bullet
+  parts = parts.map(part => part.replace(/^[-•*]\s*/, ''));
   return parts.map(part => `• ${part}`).join('\n');
 }
 
@@ -221,12 +238,12 @@ jobs.forEach(job => {
   const testWs = testWb.Sheets[testWb.SheetNames[0]];
   const testData = XLSX.utils.sheet_to_json(testWs, { header: 1 });
 
-  console.log('\nTesting qualifications formatting for first 3 jobs:');
-  for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
-    const qualIndex = 6;
-    const qual = testData[i][qualIndex] || 'N/A';
-    console.log(`Job ${i} qualifications:\n"${qual}"\n`);
-  }
+console.log('\nTesting qualifications formatting for first 10 jobs:');
+for (let i = 1; i <= Math.min(10, testData.length - 1); i++) {
+  const qualIndex = 6; // Qualifications column index (0-based: 0=title,1=company,2=city,3=state,4=region,5=desc,6=qual,...)
+  const qual = testData[i][qualIndex] || 'N/A';
+  console.log(`Job ${i} (Row ${i+1}) qualifications:\n"${qual}"\n`);
+}
 
   console.log('Testing hyperlinks in Source File column for first 3 jobs:');
   for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
