@@ -15,6 +15,13 @@ An intelligent healthcare job collection and filtering system that automatically
 
 ## Recent Major Enhancements (December 2025)
 
+### Version 2.3 - Education Filtering Integration
+- **🎓 Excel-Level Education Filtering**: Added meetsEducationCriteria() function directly to Excel generation
+- **🔄 Selective Filtering**: Excel output now filters for bachelor's degree positions while preserving raw data
+- **📊 Filter Transparency**: Console logging shows before/after job counts for filtering effectiveness
+- **⚖️ Balanced Approach**: Maintains comprehensive data collection with targeted Excel reporting
+- **🔧 Modular Design**: Education filtering logic embedded in Excel generation for flexible output control
+
 ### Version 2.2 - Excel Enhancement Update
 - **📎 Hyperlinked Source Files**: Source File column URLs now clickable with professional blue styling 
 - **📦 xlsx-populate Integration**: Added second Excel library for advanced formatting capabilities
@@ -36,7 +43,7 @@ An intelligent healthcare job collection and filtering system that automatically
 - `docs/`: Documentation including this README and project structure guide
 - `scripts/`: JavaScript processing pipeline with education filtering
   - `html_to_json.js`: Processes HTML files with bachelor's degree filtering and URL extraction
-  - `json_to_excel.js`: Generates comprehensive Excel files with 14 metadata columns
+  - `json_to_excel.js`: Generates comprehensive Excel files with 14 metadata columns and integrated bachelor's degree filtering
   - `education_filter_js.js`: Advanced education requirement analysis (JavaScript implementation)
   - `extract_job.js`: Manual browser console extraction for single jobs
 - `hc_jobs_pipeline/`: Python-based automated job collection pipeline
@@ -93,11 +100,14 @@ pip install -r requirements.txt
    - Includes inclusion rates and processing statistics
    - Saves historical reports for trend analysis
 
-3. **Generate Excel report** (optional):
+3. **Generate Excel report** with education filtering:
    ```bash
    npm run json-to-excel
    ```
-   Creates timestamped Excel file with all 14 metadata fields
+   Creates timestamped Excel file with bachelor's degree filtering applied at generation time
+   - Maintains full data collection in JSON files
+   - Applies education criteria filtering specifically for Excel output
+   - Console shows filtering statistics: original count → filtered count
 
 ### 📂 Manual HTML Processing
 
@@ -137,6 +147,8 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Optimized Formatting**: Text wrapping, proper row heights (60px), and column widths for readability
 - **Bullet Point Formatting**: Qualifications displayed with proper bullet points and line breaks
 - **Date Standardization**: Collected At timestamps formatted as MM-DD-YYYY for consistency and readability
+- **Education-Based Filtering**: Bachelor's degree requirement filtering applied at Excel generation level
+- **Filter Transparency**: Console output shows original vs filtered job counts for quality assurance
 - **Dual Library Architecture**: Uses xlsx-populate for advanced styling with XLSX fallback for testing
 - **Comprehensive Testing**: Built-in verification displays sample qualifications, hyperlinks, and date formatting
 ### Manual Extraction (Single Job)
@@ -181,6 +193,8 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **URL Extraction**: Recovers original job URLs from HTML metadata instead of local file paths
 - **Schema Unification**: Identical data structure between Python ATS and HTML processing pipelines
 - **Field Optimization**: Eliminated redundant pay fields while maintaining comprehensive metadata
+- **Excel-Level Education Filtering**: meetsEducationCriteria() function filters jobs at Excel generation
+- **Selective Output Control**: Maintains full data collection with targeted bachelor's degree Excel reporting
 - **Date Standardization**: Automatic conversion of timestamps to MM-DD-YYYY format for Excel consistency
 - **Dual Excel Libraries**: xlsx-populate for advanced styling features with XLSX fallback for compatibility testing
 - **Hyperlink Integration**: Automatic URL detection and styling for Source File column links
