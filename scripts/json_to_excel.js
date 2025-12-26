@@ -2,26 +2,46 @@ const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 
-// Read all JSON files from data/json directory
-const jsonDir = 'data/json';
-const jsonFiles = fs.readdirSync(jsonDir).filter(file => file.endsWith('.json'));
-
+// Read job data from multiple sources
 const jobs = [];
 
-jsonFiles.forEach(file => {
+// Load from new pipeline output (primary source)
+const pipelineFile = 'hc_jobs_pipeline/output/healthcare_admin_jobs_us_nationwide.json';
+if (fs.existsSync(pipelineFile)) {
   try {
-    const filePath = path.join(jsonDir, file);
-    const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-    if (Array.isArray(jobData)) {
-      jobs.push(...jobData);
-    } else {
-      jobs.push(jobData);
+    const pipelineData = JSON.parse(fs.readFileSync(pipelineFile, 'utf-8'));
+    if (Array.isArray(pipelineData)) {
+      jobs.push(...pipelineData);
+      console.log(`Loaded ${pipelineData.length} jobs from pipeline output`);
     }
-    console.log(`Loaded job data from ${file}`);
   } catch (err) {
-    console.error(`Error reading ${file}:`, err.message);
+    console.error(`Error reading pipeline file:`, err.message);
   }
-});
+}
+
+// Load from legacy JSON files for additional data
+const jsonDir = 'data/json';
+if (fs.existsSync(jsonDir)) {
+  const jsonFiles = fs.readdirSync(jsonDir).filter(file => 
+    file.endsWith('.json') && 
+    !file.includes('healthcare_admin_jobs_west_100plus.json') // Skip old file to avoid duplicates
+  );
+
+  jsonFiles.forEach(file => {
+    try {
+      const filePath = path.join(jsonDir, file);
+      const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (Array.isArray(jobData)) {
+        jobs.push(...jobData);
+      } else {
+        jobs.push(jobData);
+      }
+      console.log(`Loaded additional job data from ${file}`);
+    } catch (err) {
+      console.error(`Error reading ${file}:`, err.message);
+    }
+  });
+}
 
 // Prepare data for Excel
 const data = [

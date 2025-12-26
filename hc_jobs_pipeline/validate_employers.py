@@ -12,7 +12,7 @@ import urllib.parse
 
 async def test_lever_endpoint(slug: str, client: httpx.AsyncClient) -> Tuple[bool, str, int]:
     """Test a Lever API endpoint."""
-    url = f"https://jobs.lever.co/{slug}"
+    url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
     try:
         response = await client.get(url, timeout=10)
         job_count = 0
@@ -56,7 +56,7 @@ async def validate_employer(employer: Dict, client: httpx.AsyncClient) -> Dict:
         'ok': success,
         'status': status,
         'job_count': job_count,
-        'tested_url': f"https://jobs.lever.co/{slug}" if platform == 'lever' else f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
+        'tested_url': f"https://api.lever.co/v0/postings/{slug}?mode=json" if platform == 'lever' else f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
     }
     
     # Special handling for problematic entries

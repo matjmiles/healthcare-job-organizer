@@ -1,5 +1,49 @@
 [
   {
+    "company": "Nomi Health",
+    "platform": "lever",
+    "slug": "nomihealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 10,
+      "tested_url": "https://api.lever.co/v0/postings/nomihealth?mode=json"
+    }
+  },
+  {
+    "company": "Included Health",
+    "platform": "lever",
+    "slug": "includedhealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 65,
+      "tested_url": "https://api.lever.co/v0/postings/includedhealth?mode=json"
+    }
+  },
+  {
+    "company": "Lyra Health",
+    "platform": "lever",
+    "slug": "lyrahealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 214,
+      "tested_url": "https://api.lever.co/v0/postings/lyrahealth?mode=json"
+    }
+  },
+  {
+    "company": "Planned Parenthood Association of Utah",
+    "platform": "lever",
+    "slug": "ppau",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 3,
+      "tested_url": "https://api.lever.co/v0/postings/ppau?mode=json"
+    }
+  },
+  {
     "company": "Charlie Health",
     "platform": "greenhouse",
     "slug": "charliehealth",
@@ -107,6 +151,116 @@
       "status": "HTTP 200",
       "job_count": 3,
       "tested_url": "https://boards-api.greenhouse.io/v1/boards/sidebycare/jobs"
+    }
+  },
+  {
+    "company": "Clinical Health Network For Transformation",
+    "platform": "lever",
+    "slug": "ClinicalHealthNetworkForTransformation",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 4,
+      "tested_url": "https://api.lever.co/v0/postings/ClinicalHealthNetworkForTransformation?mode=json"
+    }
+  },
+  {
+    "company": "Everlywell",
+    "platform": "lever",
+    "slug": "everlywell",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 25,
+      "tested_url": "https://api.lever.co/v0/postings/everlywell?mode=json"
+    }
+  },
+  {
+    "company": "myPlace Health",
+    "platform": "lever",
+    "slug": "myPlaceHealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 21,
+      "tested_url": "https://api.lever.co/v0/postings/myPlaceHealth?mode=json"
+    }
+  },
+  {
+    "company": "Prosper Health",
+    "platform": "greenhouse",
+    "slug": "prosperhealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 42,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/prosperhealth/jobs"
+    }
+  },
+  {
+    "company": "Cohere Health",
+    "platform": "greenhouse",
+    "slug": "coherehealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 39,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/coherehealth/jobs"
+    }
+  },
+  {
+    "company": "Spring Health",
+    "platform": "greenhouse",
+    "slug": "springhealth66",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 84,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/springhealth66/jobs"
+    }
+  },
+  {
+    "company": "Hone Health",
+    "platform": "greenhouse",
+    "slug": "honehealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 15,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/honehealth/jobs"
+    }
+  },
+  {
+    "company": "Modern Health",
+    "platform": "greenhouse",
+    "slug": "modernhealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 12,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/modernhealth/jobs"
+    }
+  },
+  {
+    "company": "Find HealthCareers",
+    "platform": "greenhouse",
+    "slug": "find",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 14,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/find/jobs"
+    }
+  },
+  {
+    "company": "Pyramid Healthcare",
+    "platform": "greenhouse",
+    "slug": "1pyra%29mid_health%26care",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 334,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/1pyra%29mid_health%26care/jobs"
     }
   }
 ]

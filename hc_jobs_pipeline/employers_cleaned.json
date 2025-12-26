@@ -48,5 +48,40 @@
     "company": "Sideby Care",
     "platform": "greenhouse",
     "slug": "sidebycare"
+  },
+  {
+    "company": "Prosper Health",
+    "platform": "greenhouse",
+    "slug": "prosperhealth"
+  },
+  {
+    "company": "Cohere Health",
+    "platform": "greenhouse",
+    "slug": "coherehealth"
+  },
+  {
+    "company": "Spring Health",
+    "platform": "greenhouse",
+    "slug": "springhealth66"
+  },
+  {
+    "company": "Hone Health",
+    "platform": "greenhouse",
+    "slug": "honehealth"
+  },
+  {
+    "company": "Modern Health",
+    "platform": "greenhouse",
+    "slug": "modernhealth"
+  },
+  {
+    "company": "Find HealthCareers",
+    "platform": "greenhouse",
+    "slug": "find"
+  },
+  {
+    "company": "Pyramid Healthcare",
+    "platform": "greenhouse",
+    "slug": "1pyra%29mid_health%26care"
   }
 ]
