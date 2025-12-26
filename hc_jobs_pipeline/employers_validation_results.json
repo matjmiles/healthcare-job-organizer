@@ -1,0 +1,112 @@
+[
+  {
+    "company": "Charlie Health",
+    "platform": "greenhouse",
+    "slug": "charliehealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 255,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/charliehealth/jobs"
+    }
+  },
+  {
+    "company": "Midi Health",
+    "platform": "greenhouse",
+    "slug": "midihealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 79,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/midihealth/jobs"
+    }
+  },
+  {
+    "company": "Frontera Health",
+    "platform": "greenhouse",
+    "slug": "fronterahealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 15,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/fronterahealth/jobs"
+    }
+  },
+  {
+    "company": "Guidelight Health",
+    "platform": "greenhouse",
+    "slug": "guidelighthealth",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 40,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/guidelighthealth/jobs"
+    }
+  },
+  {
+    "company": "Sandstone Care",
+    "platform": "greenhouse",
+    "slug": "sandstonecare",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 25,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/sandstonecare/jobs"
+    }
+  },
+  {
+    "company": "Kindbridge",
+    "platform": "greenhouse",
+    "slug": "kindbridgecorporation",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 11,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/kindbridgecorporation/jobs"
+    }
+  },
+  {
+    "company": "Capital Rx (Judi Health)",
+    "platform": "greenhouse",
+    "slug": "capitalrx",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 41,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/capitalrx/jobs"
+    }
+  },
+  {
+    "company": "Ceribell",
+    "platform": "greenhouse",
+    "slug": "ceribell",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 33,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/ceribell/jobs"
+    }
+  },
+  {
+    "company": "Vail Health Hospital",
+    "platform": "greenhouse",
+    "slug": "vailclinicincdbavailhealthhospital",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 120,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/vailclinicincdbavailhealthhospital/jobs"
+    }
+  },
+  {
+    "company": "Sideby Care",
+    "platform": "greenhouse",
+    "slug": "sidebycare",
+    "validation": {
+      "ok": true,
+      "status": "HTTP 200",
+      "job_count": 3,
+      "tested_url": "https://boards-api.greenhouse.io/v1/boards/sidebycare/jobs"
+    }
+  }
+]

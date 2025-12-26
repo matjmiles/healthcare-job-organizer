@@ -52,10 +52,10 @@ project-root/
    pip install -r requirements.txt
    ```
 2. **Run Collection**: `python run_collect.py`
-   - Queries 14+ healthcare organizations via Lever/Greenhouse APIs
+   - Queries 12 validated healthcare organizations via Greenhouse API
    - Applies geographic filtering (western states: ID, WA, OR, UT, WY, MT, CO, AZ)
-   - Bachelor's degree filtering with weighted scoring system
-   - Typical results: ~28 qualified jobs from 2800+ total (97% filtering)
+   - Bachelor's degree filtering with weighted scoring system + advanced degree exclusion
+   - Current results: ~7 qualified jobs from 950+ total (99% filtering)
 3. **Output Locations**: 
    - `hc_jobs_pipeline/output/healthcare_admin_jobs_west_100plus.json` (pipeline)
    - `data/json/healthcare_admin_jobs_west_100plus.json` (for Excel processing)
@@ -114,10 +114,16 @@ project-root/
 
 #### `hc_jobs_pipeline/run_collect.py` 🚀
 - **Function**: Automated job collection from ATS APIs
-- **Sources**: Lever, Greenhouse platforms (14+ employers)
-- **Filtering**: Geographic + title + education requirements
-- **Output**: ~28 bachelor's-level jobs from 2800+ candidates
+- **Sources**: Greenhouse platform (12 validated employers)
+- **Filtering**: Geographic + title + education requirements + advanced degree exclusion
+- **Output**: ~7 bachelor's-level jobs from 950+ candidates
 - **Features**: Pay normalization, metadata enrichment, unified schema
+
+#### `hc_jobs_pipeline/validate_employers.py` ✅
+- **Function**: Validates employer API endpoints for functionality
+- **Capabilities**: Tests Lever and Greenhouse endpoints, handles encoded URLs, suggests fixes
+- **Output**: Validation reports and cleaned employer configurations
+- **Integration**: Ensures 100% functional endpoint reliability
 
 #### `hc_jobs_pipeline/education_filters.py` 🎯
 - **Core Algorithm**: Advanced pattern matching for bachelor's degree requirements
@@ -194,17 +200,17 @@ node scripts/test_education_filter_js.js          # Validate JavaScript filterin
 
 ### Sample Data Flow
 **Input Sources**:
-- ATS APIs: 2800+ western states healthcare jobs
+- ATS APIs: 950+ western states healthcare jobs from 12 validated employers
 - HTML Files: 9 manually saved Indeed pages
 
 **After Filtering**:
-- ATS Pipeline: ~28 bachelor's-level positions (97% filtered)
-- HTML Processing: 2 bachelor's-level positions (77.8% filtered)
+- ATS Pipeline: ~7 bachelor's-level positions (99% filtered with advanced degree exclusion)
+- HTML Processing: 1 bachelor's-level position (88.9% filtered)
 
 **Final Output**:
-- Excel File: 30 total qualified positions with comprehensive metadata
+- Excel File: 8 total qualified positions with comprehensive metadata
 - Processing Time: <2 minutes for complete pipeline
-- Data Quality: All jobs require bachelor's degrees in relevant fields
+- Data Quality: All jobs require bachelor's degrees, exclude overqualified positions
 
 ### Error Handling & Monitoring
 - **Filtering Transparency**: Detailed logging shows why jobs are included/excluded

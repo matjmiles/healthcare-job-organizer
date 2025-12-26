@@ -79,10 +79,11 @@ pip install -r requirements.txt
 3. **Generate Excel**: Same as automated method above
 
 ### 🎯 Education Filtering Results
-- **Filtering Effectiveness**: 77.8% - 97% of jobs excluded (varies by data source)
+- **Filtering Effectiveness**: 88.9% - 99% of jobs excluded (varies by data source)
 - **Target Jobs**: Bachelor's degree required in healthcare administration, management, or related fields
-- **Excluded**: High school diploma, associate degree, or "experience in lieu of degree" positions
+- **Excluded**: High school diploma, associate degree, advanced degree requirements, or "experience in lieu of degree" positions
 - **Advanced Scoring**: Weighted algorithm considers context, requirements vs. preferences, and healthcare-specific degree programs
+- **Overqualified Exclusion**: Master's, PhD, and other advanced degree requirements automatically excluded
 
 ### 📊 Comprehensive Data Schema
 - **Core Information**: `jobTitle`, `company`, `location`, `jobDescription`, `qualifications`
@@ -145,10 +146,11 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 
 ## Performance Metrics
 
-- **Data Reduction**: 2800+ jobs → 28-30 bachelor's-qualified positions (97% filtering)
+- **Data Reduction**: 950+ jobs → 7-8 bachelor's-qualified positions (99% filtering)
 - **Processing Speed**: Full pipeline execution in under 2 minutes
-- **Accuracy**: 77.8% - 97% filtering effectiveness depending on data source
-- **Coverage**: 14+ healthcare organizations across 8 western states
+- **Accuracy**: 88.9% - 99% filtering effectiveness depending on data source
+- **Coverage**: 12 validated healthcare organizations (all Greenhouse platform)
+- **Employer Validation**: 100% functional endpoints after cleanup
 
 ## Troubleshooting
 
@@ -180,11 +182,13 @@ node scripts/test_education_filter_js.js
 npm run test
 ```
 
-## Recent Enhancements (Version 2.0)
+## Recent Enhancements (Version 2.1)
 
+- ✅ **Advanced Degree Exclusion**: Now excludes Master's/PhD requirements (focus on bachelor's-level positions)
+- ✅ **Employer Validation**: Added validation script, removed 4 broken Lever endpoints
 - ✅ **Field Structure Optimization**: Simplified from 3 pay fields to 1 normalized field
 - ✅ **URL Source Recovery**: Extract original job URLs from HTML metadata
 - ✅ **Excel Enhancement**: Expanded to 14-column output with all metadata
 - ✅ **Schema Consistency**: Unified data structure across all processing methods
-- ✅ **Education Filtering**: 97% reduction in irrelevant job postings
+- ✅ **Education Filtering**: 99% reduction in irrelevant job postings
 - ✅ **Pay Normalization**: Standardized hourly rate conversion across all sources
