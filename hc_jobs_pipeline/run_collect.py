@@ -12,6 +12,7 @@ from rapidfuzz import fuzz
 # Import our education filtering logic
 from education_filters import meets_bachelors_requirement, analyze_education_requirements
 from relaxed_education_filters import meets_relaxed_education_requirement
+from enhanced_qualifications import QualificationsExtractor
 
 # US Census Bureau regions and states
 US_REGIONS = {
@@ -346,6 +347,9 @@ async def collect() -> None:
     out_dir.mkdir(exist_ok=True)
 
     employers = json.loads(employers_path.read_text(encoding="utf-8"))
+    
+    # Initialize enhanced qualifications extractor
+    quals_extractor = QualificationsExtractor()
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) JobResearchCollector/1.0"
@@ -402,7 +406,7 @@ async def collect() -> None:
                         entry = entry_level_flag(title, desc)
 
                         full_text = (title + "\n" + loc + "\n" + desc).strip()
-                        quals = extract_qualifications(full_text)
+                        quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
                         # This job passed all filters
                         filtering_stats["final_jobs_included"] += 1
@@ -454,7 +458,7 @@ async def collect() -> None:
                         entry = entry_level_flag(title, desc)
 
                         full_text = (title + "\n" + loc + "\n" + desc).strip()
-                        quals = extract_qualifications(full_text)
+                        quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
                         # GH provides updated_at / created_at but not close date
                         created = parse_date(j.get("created_at"))
