@@ -33,6 +33,27 @@ def get_state_region(state_code: str) -> str:
             return region
     return "Unknown"
 
+def extract_city_from_location(location: str) -> str:
+    """Extract city name from location string (e.g. 'Nashville, TN' -> 'Nashville')."""
+    if not location:
+        return ""
+    
+    # Handle common location formats
+    location = location.strip()
+    
+    # If location contains comma, take everything before the first comma as city
+    if ',' in location:
+        city = location.split(',')[0].strip()
+        return city
+    
+    # If no comma, check if it's a remote/hybrid indicator
+    location_lower = location.lower()
+    if any(keyword in location_lower for keyword in ['remote', 'hybrid', 'work from home', 'nationwide']):
+        return location  # Keep as-is for remote positions
+    
+    # Otherwise return the whole location as city
+    return location
+
 ENTRY_LEVEL_TITLE_HINTS = [
     "coordinator", "representative", "specialist", "assistant", "associate",
     "clerk", "scheduler", "scheduling", "patient access", "registration",
@@ -386,10 +407,11 @@ async def collect() -> None:
                         filtering_stats["final_jobs_included"] += 1
 
                         state = infer_state(loc)
+                        city = extract_city_from_location(loc)
                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
-                            "location": clean_text_field(loc),
+                            "city": clean_text_field(city),
                             "state": state,
                             "region": get_state_region(state) if state else "Unknown",
                             "remoteFlag": infer_remote_flag(loc),
@@ -441,10 +463,11 @@ async def collect() -> None:
                         filtering_stats["final_jobs_included"] += 1
 
                         state = infer_state(loc)
+                        city = extract_city_from_location(loc)
                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
-                            "location": clean_text_field(loc),
+                            "city": clean_text_field(city),
                             "state": state,
                             "region": get_state_region(state) if state else "Unknown",
                             "remoteFlag": infer_remote_flag(loc),

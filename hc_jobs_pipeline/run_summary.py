@@ -153,21 +153,15 @@ def analyze_jobs(jobs, output_lines):
             remote_count += 1
             states['Remote'] += 1
         else:
-            state = job.get('state') or job.get('location', '').split(',')[-1].strip()
-            if state and len(state) <= 3:  # Likely a state abbreviation
+            state = job.get('state', '')
+            if state:
                 states[state] += 1
-            elif 'Remote' in job.get('location', ''):
-                remote_count += 1
-                states['Remote'] += 1
             else:
-                # Try to extract state from location string
-                location = job.get('location', 'Unknown')
-                if ',' in location:
-                    potential_state = location.split(',')[-1].strip()
-                    if len(potential_state) == 2:  # State abbreviation
-                        states[potential_state.upper()] += 1
-                    else:
-                        states['Other'] += 1
+                # Fallback for jobs without state field
+                city = job.get('city', 'Unknown')
+                if any(keyword in city.lower() for keyword in ['remote', 'hybrid']):
+                    remote_count += 1
+                    states['Remote'] += 1
                 else:
                     states['Unknown'] += 1
     

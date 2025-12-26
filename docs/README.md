@@ -113,9 +113,9 @@ pip install -r requirements.txt
 - **Statistical Tracking**: Comprehensive analytics showing exactly why jobs were filtered out for continuous improvement
 
 ### 📊 Comprehensive Data Schema
-- **Core Information**: `jobTitle`, `company`, `location`, `jobDescription`, `qualifications`
+- **Core Information**: `jobTitle`, `company`, `city`, `jobDescription`, `qualifications`
 - **Normalized Pay**: Single `pay` field with hourly conversion (eliminates redundant fields)
-- **Geographic Data**: `state`, `region` (US Census Bureau classification), `remoteFlag` (auto-detected)
+- **Geographic Data**: `city` (extracted from location), `state`, `region` (US Census Bureau classification), `remoteFlag` (auto-detected)
 - **Source Tracking**: `sourceFile` (original URLs), `sourcePlatform`, `collectedAt`
 - **Classification**: `careerTrack`, `entryLevelFlag` (intelligent inference)
 
