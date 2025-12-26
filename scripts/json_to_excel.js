@@ -77,6 +77,21 @@ function formatQualifications(qualStr) {
   return parts.map(part => `• ${part}`).join('\n');
 }
 
+// Helper function to format date as mm-dd-yyyy
+function formatDate(dateStr) {
+  if (!dateStr || dateStr === 'N/A') return 'N/A';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'N/A';
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  } catch (e) {
+    return 'N/A';
+  }
+}
+
 jobs.forEach(job => {
    const cleanTitle = job.jobTitle.split(' - ')[0];
    const formattedQualifications = formatQualifications(job.qualifications);
@@ -94,7 +109,7 @@ jobs.forEach(job => {
      job.sourcePlatform || 'N/A',
      job.careerTrack || 'N/A',
      job.entryLevelFlag !== undefined ? job.entryLevelFlag.toString() : 'N/A',
-     job.collectedAt || 'N/A',
+     formatDate(job.collectedAt),
      job.sourceFile || 'N/A'
    ]);
  });
@@ -186,5 +201,12 @@ jobs.forEach(job => {
     const cellRef = XLSX.utils.encode_cell({ r: i, c: 14 });
     const hasLink = testWs[cellRef] && testWs[cellRef].l ? 'Yes' : 'No';
     console.log(`Job ${i} Source File: ${sourceFile} (Hyperlink: ${hasLink})`);
+  }
+
+  console.log('Testing Collected At date formatting for first 3 jobs:');
+  for (let i = 1; i <= Math.min(3, testData.length - 1); i++) {
+    const collectedIndex = 13; // Collected At column
+    const collectedAt = testData[i][collectedIndex] || 'N/A';
+    console.log(`Job ${i} Collected At: ${collectedAt}`);
   }
 })();

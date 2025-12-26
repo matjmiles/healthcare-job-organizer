@@ -19,7 +19,8 @@ An intelligent healthcare job collection and filtering system that automatically
 - **📎 Hyperlinked Source Files**: Source File column URLs now clickable with professional blue styling 
 - **📦 xlsx-populate Integration**: Added second Excel library for advanced formatting capabilities
 - **🎨 Enhanced Styling**: Improved cell formatting, text wrapping, and optimal column/row sizing
-- **✨ Format Verification**: Built-in testing confirms hyperlinks and qualification formatting
+- **📅 Date Formatting**: Collected At dates now display in MM-DD-YYYY format for consistency
+- **✨ Format Verification**: Built-in testing confirms hyperlinks, qualification formatting, and date formatting
 
 ### Version 2.1 - Education Filter Breakthrough
 - **🎯 BREAKTHROUGH: Relaxed Education Filter** - Increased job results by **32x** (from 13 to 417 jobs)
@@ -135,8 +136,9 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Hyperlinked Source Files**: URLs in Source File column are clickable links with professional blue styling
 - **Optimized Formatting**: Text wrapping, proper row heights (60px), and column widths for readability
 - **Bullet Point Formatting**: Qualifications displayed with proper bullet points and line breaks
+- **Date Standardization**: Collected At timestamps formatted as MM-DD-YYYY for consistency and readability
 - **Dual Library Architecture**: Uses xlsx-populate for advanced styling with XLSX fallback for testing
-- **Format Verification**: Built-in testing displays sample qualifications and confirms hyperlink functionality
+- **Comprehensive Testing**: Built-in verification displays sample qualifications, hyperlinks, and date formatting
 ### Manual Extraction (Single Job)
 
 1. Open job URL in browser.
@@ -179,6 +181,7 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **URL Extraction**: Recovers original job URLs from HTML metadata instead of local file paths
 - **Schema Unification**: Identical data structure between Python ATS and HTML processing pipelines
 - **Field Optimization**: Eliminated redundant pay fields while maintaining comprehensive metadata
+- **Date Standardization**: Automatic conversion of timestamps to MM-DD-YYYY format for Excel consistency
 - **Dual Excel Libraries**: xlsx-populate for advanced styling features with XLSX fallback for compatibility testing
 - **Hyperlink Integration**: Automatic URL detection and styling for Source File column links
 
