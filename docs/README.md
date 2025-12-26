@@ -21,6 +21,7 @@ An intelligent healthcare job collection and filtering system that automatically
 - **📊 Improved Filtering Stats**: Education requirements now filter only **1.8%** of jobs (vs previous 54.6%)
 - **🏢 24 Validated Employers**: Expanded employer database with comprehensive validation system
 - **🌎 True Nationwide Coverage**: 417 jobs across 26 states representing all major regions
+- **✅ Enhanced Qualifications Display**: Fixed Excel bullet point formatting for improved readability of job requirements
 
 ## Project Structure
 
@@ -213,6 +214,7 @@ npm run test
 
 ## Recent Enhancements (Version 2.1)
 
+- ✅ **Enhanced Qualifications Display**: Fixed Excel bullet point formatting for improved readability of job requirements
 - ✅ **Advanced Degree Exclusion**: Now excludes Master's/PhD requirements (focus on bachelor's-level positions)
 - ✅ **Employer Validation**: Added validation script, removed 4 broken Lever endpoints
 - ✅ **Field Structure Optimization**: Simplified from 3 pay fields to 1 normalized field
