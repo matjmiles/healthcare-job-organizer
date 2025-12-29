@@ -186,12 +186,11 @@ BACHELORS_PREFERRED_PATTERNS = [
 ]
 
 # === CONTEXT EXCLUSIONS ===
-# Phrases that might indicate we should still exclude despite bachelor's mention
+# Currently empty - we include ANY mention of bachelor's degree
+# Previous exclusions for entry-level removed to be more inclusive
 
 CONTEXT_EXCLUSIONS = [
-    # When it's clearly entry-level despite bachelor's requirement
-    r"entry.level.{0,50}bachelor",
-    r"bachelor.{0,50}entry.level"
+    # No exclusions - include any bachelor's mention regardless of context
 ]
 
 # === SCORING WEIGHTS ===
@@ -199,13 +198,12 @@ CONTEXT_EXCLUSIONS = [
 
 PATTERN_WEIGHTS = {
     'healthcare_admin_bachelors': 10,  # Highest priority
-    'advanced_degree': -8,            # Exclude - overqualified positions
+    'advanced_degree': -100,          # Strict exclude - overqualified positions
     'bachelors_required': 6,          # Strong inclusion
     'bachelors_mentioned': 4,         # Moderate inclusion
     'bachelors_preferred': 5,         # Strong inclusion for preferred positions  
-    'high_school_only': -10,          # Strong exclusion
-    'associates_only': -8,            # Strong exclusion
-    'context_exclusion': -3,          # Light exclusion (reduced impact)
+    'high_school_only': -10,          # Strong exclusion when no bachelor's mentioned
+    'associates_only': -8,            # Strong exclusion when no bachelor's mentioned
     'no_degree_required': -6          # Strong exclusion
 }
 
@@ -309,7 +307,11 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             matches['context_exclusion'].append(pattern)
             score += PATTERN_WEIGHTS['context_exclusion']
     
-    # FINAL INCLUSION LOGIC: If bachelor's is mentioned in ANY way, include it
+    # FINAL INCLUSION LOGIC: Three simple rules
+    # 1. Include ANY job where bachelor's degree is mentioned
+    # 2. Exclude jobs with only high school/associates (no bachelor's mention)
+    # 3. Exclude advanced degree requirements (overqualified)
+    
     has_bachelors = (len(matches['healthcare_admin_bachelors']) > 0 or 
                      len(matches['bachelors_required']) > 0 or 
                      len(matches['bachelors_mentioned']) > 0 or
@@ -317,20 +319,20 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     has_high_school = len(matches['high_school_only']) > 0
     has_advanced_degree = len(matches['advanced_degree']) > 0
     
-    # If bachelor's is mentioned, override any negative scoring from high school/associates
-    if has_bachelors and score < 0:
-        score = 5  # Ensure positive score for any bachelor's mention
+    # Rule 1: If bachelor's mentioned, include it (override any negative scoring)
+    if has_bachelors:
+        score = max(score, 5)  # Ensure positive score
     
-    # Only exclude if high school/associates mentioned BUT no bachelor's mentioned at all
+    # Rule 2: Only exclude if high school/associates mentioned BUT no bachelor's at all
     if has_high_school and not has_bachelors:
         score = -100
     
-    # STRICT EXCLUSION: If advanced degree is required, exclude regardless of other factors
+    # Rule 3: Strict exclusion for advanced degrees (overqualified)
     if has_advanced_degree:
         score = -100
     
-    # Determine if we should include this job
-    should_include = score > 0 and not has_advanced_degree
+    # Final decision: include if positive score and not overqualified
+    should_include = score > 0
     
     # Generate reasoning
     reasoning_parts = []
@@ -347,8 +349,6 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
         reasoning_parts.append("Bachelor's degree preferred but not required")
     if matches['high_school_only']:
         reasoning_parts.append("High school/Associates degree mentioned")
-    if matches['context_exclusion']:
-        reasoning_parts.append("Bachelor's only preferred or substitutable")
     if matches['no_degree_required']:
         reasoning_parts.append("No degree required")
     
