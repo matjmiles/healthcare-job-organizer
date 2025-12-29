@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Pipeline",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/hc_jobs_pipeline/run_collect.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/hc_jobs_pipeline",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "stopOnEntry": true,
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/hc_jobs_pipeline"
+            }
+        },
+        {
+            "name": "Debug Unit Tests",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "${workspaceFolder}/hc_jobs_pipeline/tests/run_tests.py",
+            "args": ["--unit"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/hc_jobs_pipeline",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "stopOnEntry": false,
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Integration Tests",
+            "type": "debugpy",
+            "request": "launch", 
+            "program": "${workspaceFolder}/hc_jobs_pipeline/tests/run_tests.py",
+            "args": ["--integration"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/hc_jobs_pipeline", 
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "stopOnEntry": false,
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Education Logic",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/hc_jobs_pipeline/tests/debug/debug_education_logic.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/hc_jobs_pipeline",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "stopOnEntry": false,
+            "justMyCode": false
+        }
+    ]
+}

@@ -12,6 +12,13 @@ This file documents commands and tasks for opencode to remember across sessions.
 - **Convert HTML to JSON**: `node scripts/html_to_json.js`
 - **Generate Excel**: `npm run json-to-excel`
 
+### Testing & Quality Assurance
+- **Run all tests**: `cd hc_jobs_pipeline && python tests/run_tests.py`
+- **Unit tests only**: `cd hc_jobs_pipeline && python tests/run_tests.py --unit`
+- **Integration tests**: `cd hc_jobs_pipeline && python tests/run_tests.py --integration`
+- **Interactive debugging**: `cd hc_jobs_pipeline && python tests/debug/debug_education_logic.py`
+- **VS Code debugging**: Use F5 with "Debug Pipeline" configuration
+
 ## Key Tasks Completed
 
 1. **Multi-Source Job Collection**: 
@@ -41,6 +48,12 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Duplicate detection and source tracking
    - Geographic extraction with comprehensive US state/region mapping
 
+6. **Test Infrastructure & Debugging**:
+   - **Organized Test Suite**: Industry-standard test organization with unit/integration/debug separation
+   - **VS Code Integration**: Full debugging support with step-through capabilities
+   - **Comprehensive Coverage**: Education filters, health admin identification, qualification extraction
+   - **Interactive Debug Tools**: Real-time testing and analysis utilities
+
 ## Current State (December 29, 2025)
 
 - **Pipeline Jobs**: 17 (from 1,499 analyzed with refined inclusive bachelor's filtering)
@@ -52,6 +65,19 @@ This file documents commands and tasks for opencode to remember across sessions.
   - Manual: 24 individual JSON files in `data/json/`
 
 ## Workflow Notes
+
+### Testing & Debugging (New Architecture)
+- **Test Organization**: `hc_jobs_pipeline/tests/` with unit/integration/debug separation
+  - **Unit Tests**: Individual component testing (education filters, health admin identification, qualification extraction)
+  - **Integration Tests**: End-to-end pipeline testing with mocked data
+  - **Debug Utilities**: Interactive testing and analysis tools
+- **VS Code Integration**: Full debugging support with launch configurations
+  - "Debug Pipeline": Step-by-step main pipeline debugging
+  - "Debug Unit Tests": Individual test debugging
+  - "Debug Education Logic": Interactive filter analysis
+- **Test Runner**: `python tests/run_tests.py` with options for --unit, --integration, --debug
+- **Interactive Debugging**: Step-through debugging for pipeline flow analysis
+- **Test Coverage**: Comprehensive validation of filtering logic, job identification, and data quality
 
 ### Education Filtering Strategy (Updated Architecture)
 - **Pipeline Jobs**: Inclusive bachelor's degree filtering applied in Python (`education_filters.py`)
@@ -80,3 +106,11 @@ This file documents commands and tasks for opencode to remember across sessions.
 - Geographic extraction includes all 50 US states across 4 Census regions
 - Pay extraction prioritizes full HTML scraping over API descriptions
 - xlsx-populate library enables advanced Excel styling and hyperlinks
+
+### Testing & Quality Assurance
+- Comprehensive test suite available in `hc_jobs_pipeline/tests/`
+- Use `python tests/run_tests.py` for full test execution
+- VS Code debugging configurations ready for step-by-step analysis
+- Interactive debugging tools available for filter logic analysis
+- Test coverage includes unit tests, integration tests, and debug utilities
+- All major components (education filters, health admin identification, qualification extraction) have dedicated test files

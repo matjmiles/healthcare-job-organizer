@@ -19,6 +19,65 @@ This project scrapes healthcare administration job listings from platforms like 
   - Dates formatted as MM-DD-YYYY
   - Professional formatting with xlsx-populate library
 
+## Testing
+
+The project includes a comprehensive test suite organized according to industry best practices:
+
+### Test Structure
+```
+hc_jobs_pipeline/tests/
+├── unit/                           # Unit tests for individual components
+│   ├── test_education_filters.py   # Education requirement filtering
+│   ├── test_health_admin_filters.py # Healthcare admin job identification
+│   └── test_qualifications_extractor.py # Qualification text extraction
+├── integration/                    # Integration tests for workflows
+│   └── test_pipeline_flow.py      # End-to-end pipeline testing
+├── debug/                          # Interactive debugging utilities
+│   └── debug_education_logic.py   # Interactive filter testing
+├── run_tests.py                   # Comprehensive test runner
+└── README.md                      # Detailed testing guide
+```
+
+### Running Tests
+
+**Run All Tests:**
+```bash
+cd hc_jobs_pipeline
+python tests/run_tests.py
+```
+
+**Run Specific Categories:**
+```bash
+python tests/run_tests.py --unit          # Unit tests only
+python tests/run_tests.py --integration   # Integration tests only
+python tests/run_tests.py --debug         # Interactive debugging
+```
+
+**Individual Test Files:**
+```bash
+python tests/unit/test_education_filters.py      # Education filtering
+python tests/unit/test_health_admin_filters.py   # Health admin identification
+python tests/integration/test_pipeline_flow.py   # Full pipeline testing
+```
+
+### VS Code Debugging
+
+The project includes VS Code debug configurations:
+- **"Debug Pipeline"**: Step through main pipeline execution
+- **"Debug Unit Tests"**: Debug unit tests with breakpoints
+- **"Debug Integration Tests"**: Debug integration workflows
+- **"Debug Education Logic"**: Interactive education filter debugging
+
+Use F5 to start debugging, set breakpoints, and step through code execution.
+
+### Test Coverage
+
+- **Education Filtering**: Comprehensive test cases for bachelor's degree requirements
+- **Health Admin Identification**: Job classification and keyword detection
+- **Qualification Extraction**: Text parsing and structured output
+- **Pipeline Integration**: End-to-end workflow validation
+- **Interactive Debugging**: Real-time filter analysis
+
 ## Project Structure
 
 - `hc_jobs_pipeline/`: Main pipeline directory
