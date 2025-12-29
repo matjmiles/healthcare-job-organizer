@@ -1,15 +1,15 @@
 {
   "name": "job-extractor",
   "version": "1.0.0",
-  "description": "Extract job data from Indeed URLs",
-  "main": "extract_jobs_bulk.js",
+  "description": "Healthcare admin job data processing pipeline",
+  "main": "scripts/json_to_excel.js",
   "scripts": {
     "html-to-json": "node scripts/html_to_json.js",
     "json-to-excel": "node scripts/json_to_excel.js",
     "start": "npm run html-to-json && npm run json-to-excel"
   },
   "dependencies": {
-    "cheerio": "^1.0.0",
+    "cheerio": "^1.1.2",
     "xlsx": "^0.18.5",
     "xlsx-populate": "^1.21.0"
   }

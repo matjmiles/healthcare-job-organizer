@@ -24,11 +24,13 @@ This project scrapes healthcare administration job listings from platforms like 
 - `hc_jobs_pipeline/`: Main pipeline directory
   - `run_collect.py`: Main scraper script
   - `update_pay_from_urls.py`: Script to enhance pay extraction by fetching full job pages
+  - `run_summary.py`: Generate statistical reports from job data
   - `enhanced_qualifications.py`: Qualifications extraction logic
   - `education_filters.py`: Education requirement filtering
   - `relaxed_education_filters.py`: Alternative filtering logic
   - `employers.json`: List of employers to scrape
-  - `output/`: Generated JSON and Excel files
+  - `requirements.txt`: Python dependencies
+  - `output/`: Generated JSON files
 - `data/`: Manual job collection
   - `html/`: Indeed job postings in HTML format
   - `json/`: Converted JSON files from HTML processing
@@ -36,6 +38,9 @@ This project scrapes healthcare administration job listings from platforms like 
   - `html_to_json.js`: Convert HTML files to JSON (no education filtering)
   - `json_to_excel.js`: Node.js script to convert JSON to formatted Excel
   - `education_filter_js.js`: Education filtering logic for HTML processing
+- `archive/`: Legacy code and reference files
+  - `legacy_scripts/`: Archived scripts with potential future value
+- `reports/`: Generated summary reports
 - `output/`: Final Excel files with combined and filtered data
 - `package.json`: Node.js dependencies
 
