@@ -1,6 +1,5 @@
 const fs = require('fs');
 const cheerio = require('cheerio');
-const { meetsBachelorsRequirement, analyzeEducationRequirements } = require('./education_filter_js');
 
 // Constants for field inference (matching Python pipeline)
 const TARGET_STATES = new Set(["ID", "WA", "OR", "UT", "WY", "MT", "CO", "AZ"]);
@@ -269,8 +268,14 @@ function extractFromHTML(htmlContent) {
 // Read HTML files from data/html directory and output individual JSON files
 const htmlFiles = fs.readdirSync('data/html').filter(file => file.endsWith('.html')).map(file => 'data/html/' + file);
 
+// Create data/json directory if it doesn't exist
+if (!fs.existsSync('data/json')) {
+  fs.mkdirSync('data/json', { recursive: true });
+}
+
 // Clean up old JSON files first
-const existingJsonFiles = fs.readdirSync('data/json').filter(file => file.endsWith('.json') && file.match(/^\d+_/));
+const existingJsonFiles = fs.existsSync('data/json') ? 
+  fs.readdirSync('data/json').filter(file => file.endsWith('.json') && file.match(/^\d+_/)) : [];
 existingJsonFiles.forEach(file => {
   fs.unlinkSync(`data/json/${file}`);
 });
@@ -278,10 +283,10 @@ console.log(`Cleaned up ${existingJsonFiles.length} existing JSON files`);
 
 let jobIndex = 1;
 let processedCount = 0;
-let excludedCount = 0;
 
 htmlFiles.forEach(file => {
   try {
+    console.log(`Processing ${file}...`);
     const html = fs.readFileSync(file, 'utf-8');
     const data = extractFromHTML(html);
     
@@ -295,33 +300,24 @@ htmlFiles.forEach(file => {
       data.sourceFile = file;
     }
 
-    // Apply education filtering - only process jobs that require bachelor's degrees
-    const passesEducationFilter = meetsBachelorsRequirement(data.jobDescription, data.qualifications);
-    const analysis = analyzeEducationRequirements(data.jobDescription, data.qualifications);
-    
-    if (!passesEducationFilter) {
-      excludedCount++;
-      console.log(`EXCLUDED ${file}: ${analysis.reasoning} (Score: ${analysis.score})`);
-      return; // Skip this job
-    }
-
-    // Create individual JSON file for each job that passes filtering
+    // Create individual JSON file for each job (no education filtering since files are hand-selected)
     const baseName = file.replace('data/html/', '').replace('.html', '');
     const cleanName = baseName.replace(/[^\w\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
     const outputFileName = `data/json/${jobIndex}_${cleanName}.json`;
 
+    console.log(`Writing to ${outputFileName}...`);
     fs.writeFileSync(outputFileName, JSON.stringify(data, null, 2));
-    console.log(`INCLUDED ${outputFileName}: ${analysis.reasoning} (Score: ${analysis.score})`);
+    console.log(`INCLUDED ${outputFileName}: Hand-selected file processed successfully`);
 
     jobIndex++;
     processedCount++;
   } catch (err) {
     console.error(`Error parsing ${file}:`, err.message);
+    console.error('Stack trace:', err.stack);
   }
 });
 
-console.log(`\n=== EDUCATION FILTERING RESULTS ===`);
+console.log(`\n=== HTML TO JSON CONVERSION RESULTS ===`);
 console.log(`Total HTML files processed: ${htmlFiles.length}`);
-console.log(`Jobs meeting bachelor's requirement: ${processedCount}`);
-console.log(`Jobs excluded (no bachelor's required): ${excludedCount}`);
-console.log(`Filtering effectiveness: ${((excludedCount / htmlFiles.length) * 100).toFixed(1)}% filtered out`);
+console.log(`JSON files created: ${processedCount}`);
+console.log(`Conversion success rate: ${((processedCount / htmlFiles.length) * 100).toFixed(1)}%`);

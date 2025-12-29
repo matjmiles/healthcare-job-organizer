@@ -4,14 +4,20 @@ This project scrapes healthcare administration job listings from platforms like 
 
 ## Features
 
-- **Job Scraping**: Collects jobs from specified employers on Lever and Greenhouse platforms
-- **Education Filtering**: Only includes jobs requiring bachelor's degree or higher; excludes roles needing only high school or associate's degrees
+- **Multi-Source Job Scraping**: 
+  - Automated collection from Lever and Greenhouse APIs (414 jobs)
+  - Manual Indeed job scraping with HTML extraction (24 jobs)
+  - Combined dataset processing for comprehensive coverage
+- **Flexible Education Filtering**: 
+  - Pipeline data: Bachelor's degree requirement filtering
+  - Manual selections: No filtering (hand-selected jobs)
+  - Final Excel: 56 filtered jobs meeting education criteria
 - **Pay Extraction**: Attempts to extract compensation from job descriptions and full HTML pages, normalized to hourly rates
 - **Excel Formatting**:
   - Qualifications formatted with bullet points and line breaks
   - Hyperlinked source URLs (blue and underlined)
   - Dates formatted as MM-DD-YYYY
-  - Filtered to show only relevant jobs
+  - Professional formatting with xlsx-populate library
 
 ## Project Structure
 
@@ -23,25 +29,55 @@ This project scrapes healthcare administration job listings from platforms like 
   - `relaxed_education_filters.py`: Alternative filtering logic
   - `employers.json`: List of employers to scrape
   - `output/`: Generated JSON and Excel files
-- `scripts/json_to_excel.js`: Node.js script to convert JSON to formatted Excel
+- `data/`: Manual job collection
+  - `html/`: Indeed job postings in HTML format
+  - `json/`: Converted JSON files from HTML processing
+- `scripts/`: Processing scripts
+  - `html_to_json.js`: Convert HTML files to JSON (no education filtering)
+  - `json_to_excel.js`: Node.js script to convert JSON to formatted Excel
+  - `education_filter_js.js`: Education filtering logic for HTML processing
+- `output/`: Final Excel files with combined and filtered data
 - `package.json`: Node.js dependencies
 
 ## Key Accomplishments
 
-1. **Initial Setup**: Scraped jobs from Lever and Greenhouse APIs
-2. **Education Filtering**: Implemented bachelor's degree requirement filtering to focus on appropriate roles
-3. **Pay Enhancement**: Added pay extraction from descriptions and full HTML scraping
-4. **Excel Formatting**:
+1. **Multi-Source Data Collection**: 
+   - Automated pipeline: 414 jobs from Lever/Greenhouse APIs
+   - Manual collection: 24 hand-selected Indeed jobs
+   - Combined processing workflow
+2. **Flexible Education Filtering**: 
+   - Pipeline: Bachelor's degree requirement filtering
+   - Manual: No filtering for hand-selected jobs
+   - Excel: Combined approach with 56 final filtered jobs
+3. **Advanced Pay Enhancement**: 
+   - Pay extraction from job descriptions
+   - Full HTML page scraping for missing compensation
+   - Normalized hourly rate calculations
+4. **Professional Excel Formatting**:
    - Bullet-pointed qualifications with proper line breaks
-   - Active hyperlinks for job sources
-   - Consistent date formatting
-5. **Data Quality**: Added filters to prevent erroneous low pay values (<$10/hr)
+   - Clickable hyperlinks for job sources (blue styling)
+   - MM-DD-YYYY date formatting
+   - Advanced styling with xlsx-populate library
+5. **Data Quality Controls**: 
+   - Filters for erroneous low pay values (<$10/hr)
+   - Duplicate detection and removal
+   - Source tracking and metadata preservation
 
 ## Usage
 
-1. Run scraper: `cd hc_jobs_pipeline && python run_collect.py`
+### Automated Pipeline
+1. Run main scraper: `cd hc_jobs_pipeline && python run_collect.py`
 2. Enhance pay data: `cd hc_jobs_pipeline && python update_pay_from_urls.py`
-3. Generate Excel: `npm run json-to-excel`
+
+### Manual Job Collection
+1. Save Indeed job pages as HTML files in `data/html/`
+2. Convert HTML to JSON: `node scripts/html_to_json.js`
+
+### Excel Generation
+1. Generate final Excel: `npm run json-to-excel`
+   - Combines pipeline data (414 jobs) + HTML data (24 jobs)
+   - Applies education filtering: 438 total → 56 final jobs
+   - Creates formatted Excel with hyperlinks and styling
 
 ## Dependencies
 
