@@ -173,21 +173,22 @@ ADVANCED_DEGREE_PATTERNS = [
     r"pharmd" # Doctor of Pharmacy
 ]
 
+# === BACHELOR'S PREFERRED PATTERNS ===
+# These are positive indicators where bachelor's degree is preferred but not required
+
+BACHELORS_PREFERRED_PATTERNS = [
+    r"bachelor.{0,20}preferred",
+    r"preferred.{0,20}bachelor",
+    r"bachelor.{0,20}desired",
+    r"desired.{0,20}bachelor",
+    r"bachelor.{0,20}a plus",
+    r"bachelor.{0,20}plus"
+]
+
 # === CONTEXT EXCLUSIONS ===
 # Phrases that might indicate we should still exclude despite bachelor's mention
 
 CONTEXT_EXCLUSIONS = [
-    # When bachelor's is just preferred, not required
-    r"bachelor.{0,20}preferred",
-    r"preferred.{0,20}bachelor", 
-    r"bachelor.{0,20}plus",
-    r"bachelor.{0,20}or equivalent",
-    
-    # When experience can substitute
-    r"bachelor.{0,50}or.{0,20}experience",
-    r"experience.{0,20}or.{0,20}bachelor",
-    r"bachelor.{0,50}equivalent experience",
-    
     # When it's clearly entry-level despite bachelor's requirement
     r"entry.level.{0,50}bachelor",
     r"bachelor.{0,50}entry.level"
@@ -200,10 +201,11 @@ PATTERN_WEIGHTS = {
     'healthcare_admin_bachelors': 10,  # Highest priority
     'advanced_degree': -8,            # Exclude - overqualified positions
     'bachelors_required': 6,          # Strong inclusion
-    'bachelors_mentioned': 4,         # Moderate inclusion  
+    'bachelors_mentioned': 4,         # Moderate inclusion
+    'bachelors_preferred': 5,         # Strong inclusion for preferred positions  
     'high_school_only': -10,          # Strong exclusion
     'associates_only': -8,            # Strong exclusion
-    'context_exclusion': -5,          # Moderate exclusion
+    'context_exclusion': -3,          # Light exclusion (reduced impact)
     'no_degree_required': -6          # Strong exclusion
 }
 
@@ -233,6 +235,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
         'advanced_degree': [],
         'bachelors_required': [],
         'bachelors_mentioned': [],
+        'bachelors_preferred': [],
         'high_school_only': [],
         'associates_only': [],
         'context_exclusion': [],
@@ -283,6 +286,12 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
                 matches['bachelors_mentioned'].append(pattern)
                 score += PATTERN_WEIGHTS['bachelors_mentioned']
     
+    # Check bachelor's preferred patterns (should be included)
+    for pattern in BACHELORS_PREFERRED_PATTERNS:
+        if re.search(pattern, full_text, re.IGNORECASE):
+            matches['bachelors_preferred'].append(pattern)
+            score += PATTERN_WEIGHTS['bachelors_preferred']
+    
     # Check exclusion patterns (but not primary requirements - already handled above)
     for pattern in HIGH_SCHOOL_PATTERNS:
         if not re.search(r'required', pattern, re.IGNORECASE):  # Skip "required" patterns (handled above)
@@ -300,11 +309,19 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             matches['context_exclusion'].append(pattern)
             score += PATTERN_WEIGHTS['context_exclusion']
     
-    # FINAL CHECK: If no bachelor's mentioned but high school is, exclude
-    has_bachelors = len(matches['healthcare_admin_bachelors']) > 0 or len(matches['bachelors_required']) > 0 or len(matches['bachelors_mentioned']) > 0
+    # FINAL INCLUSION LOGIC: If bachelor's is mentioned in ANY way, include it
+    has_bachelors = (len(matches['healthcare_admin_bachelors']) > 0 or 
+                     len(matches['bachelors_required']) > 0 or 
+                     len(matches['bachelors_mentioned']) > 0 or
+                     len(matches['bachelors_preferred']) > 0)
     has_high_school = len(matches['high_school_only']) > 0
     has_advanced_degree = len(matches['advanced_degree']) > 0
     
+    # If bachelor's is mentioned, override any negative scoring from high school/associates
+    if has_bachelors and score < 0:
+        score = 5  # Ensure positive score for any bachelor's mention
+    
+    # Only exclude if high school/associates mentioned BUT no bachelor's mentioned at all
     if has_high_school and not has_bachelors:
         score = -100
     
@@ -312,8 +329,8 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     if has_advanced_degree:
         score = -100
     
-    # Determine if we should include this job (must have positive score AND bachelor's mention AND no advanced degree)
-    should_include = score > 0 and has_bachelors and not has_advanced_degree
+    # Determine if we should include this job
+    should_include = score > 0 and not has_advanced_degree
     
     # Generate reasoning
     reasoning_parts = []
@@ -326,6 +343,8 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
         reasoning_parts.append("Bachelor's degree explicitly required")
     if matches['bachelors_mentioned']:
         reasoning_parts.append("Bachelor's degree mentioned")
+    if matches['bachelors_preferred']:
+        reasoning_parts.append("Bachelor's degree preferred but not required")
     if matches['high_school_only']:
         reasoning_parts.append("High school/Associates degree mentioned")
     if matches['context_exclusion']:

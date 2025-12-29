@@ -341,8 +341,8 @@ def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
     if not admin_check:
         return False, "no_admin_keywords"
     
-    # NEW: Check education requirements - use relaxed filter for broader results
-    education_check = meets_relaxed_education_requirement(text or "")
+    # Check education requirements - use strict bachelor's degree filter
+    education_check = meets_bachelors_requirement(text or "")
     
     if not education_check:
         return False, "education_requirements"
@@ -418,12 +418,12 @@ async def collect() -> None:
                          full_text = (title + "\n" + loc + "\n" + desc).strip()
                          quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
-                        # This job passed all filters
-                        filtering_stats["final_jobs_included"] += 1
+                         # This job passed all filters
+                         filtering_stats["final_jobs_included"] += 1
 
-                        state = infer_state(loc)
-                        city = extract_city_from_location(loc)
-                        results.append({
+                         state = infer_state(loc)
+                         city = extract_city_from_location(loc)
+                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
                             "city": clean_text_field(city),
@@ -471,16 +471,16 @@ async def collect() -> None:
                          full_text = (title + "\n" + loc + "\n" + desc).strip()
                          quals = quals_extractor.extract_comprehensive_qualifications(full_text)
 
-                        # GH provides updated_at / created_at but not close date
-                        created = parse_date(j.get("created_at"))
-                        updated = parse_date(j.get("updated_at"))
+                         # GH provides updated_at / created_at but not close date
+                         created = parse_date(j.get("created_at"))
+                         updated = parse_date(j.get("updated_at"))
 
-                        # This job passed all filters
-                        filtering_stats["final_jobs_included"] += 1
+                         # This job passed all filters
+                         filtering_stats["final_jobs_included"] += 1
 
-                        state = infer_state(loc)
-                        city = extract_city_from_location(loc)
-                        results.append({
+                         state = infer_state(loc)
+                         city = extract_city_from_location(loc)
+                         results.append({
                             "jobTitle": clean_text_field(title),
                             "company": clean_text_field(company),
                             "city": clean_text_field(city),
@@ -499,7 +499,7 @@ async def collect() -> None:
                             "updatedDate": updated,
                             "collectedAt": datetime.utcnow().isoformat(timespec="seconds") + "Z"
                         })
-                else:
+                 else:
                     errors.append({"company": company, "platform": platform, "slug": slug, "error": "Unsupported platform"})
             except Exception as e:
                 errors.append({"company": company, "platform": platform, "slug": slug, "error": str(e)})

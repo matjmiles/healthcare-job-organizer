@@ -44,11 +44,6 @@ if (fs.existsSync(jsonDir)) {
    });
  }
 
- // Filter jobs based on education criteria
- const originalCount = jobs.length;
- jobs = jobs.filter(job => meetsEducationCriteria(job.qualifications));
- console.log(`Filtered jobs: ${originalCount} -> ${jobs.length} jobs meet education criteria`);
-
  // Prepare data for Excel
 const data = [
   ['Job Title', 'Company', 'City', 'State', 'Region', 'Job Description', 'Qualifications', 'Pay', 'Date', 'Remote Flag', 'Source Platform', 'Career Track', 'Entry Level Flag', 'Collected At', 'Source File']
@@ -97,35 +92,6 @@ function formatQualifications(qualStr) {
   // Ensure no leading bullets in parts and format with bullet
   parts = parts.map(part => part.replace(/^[-•*]\s*/, ''));
   return parts.map(part => `• ${part}`).join('\n');
-}
-
-// Helper function to check if job meets education criteria
-function meetsEducationCriteria(qualifications) {
-  if (!qualifications || qualifications === 'N/A') return false;
-
-  const qualLower = qualifications.toLowerCase();
-
-  // Exclude jobs that require only high school (without higher degrees mentioned)
-  const requiresHighSchool = qualLower.includes('high school') || qualLower.includes('ged') || qualLower.includes('diploma');
-  const hasHigherDegree = qualLower.includes('bachelor') || qualLower.includes('master') || qualLower.includes('phd') || qualLower.includes('doctorate') || qualLower.includes('mba') || qualLower.includes('mph') || qualLower.includes('mha');
-
-  if (requiresHighSchool && !hasHigherDegree) {
-    return false;
-  }
-
-  // Exclude jobs that require associate's degree (without higher degrees mentioned)
-  const requiresAssociates = qualLower.includes('associate') || qualLower.includes('aa') || qualLower.includes('as');
-  if (requiresAssociates && !hasHigherDegree) {
-    return false;
-  }
-
-  // Include jobs that mention bachelor's or higher degrees (required or preferred)
-  if (hasHigherDegree) {
-    return true;
-  }
-
-  // Exclude jobs with no relevant education requirements
-  return false;
 }
 
 // Helper function to format date as mm-dd-yyyy
