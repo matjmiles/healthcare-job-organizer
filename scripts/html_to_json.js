@@ -1,8 +1,36 @@
 const fs = require('fs');
 const cheerio = require('cheerio');
 
-// Constants for field inference (matching Python pipeline)
-const TARGET_STATES = new Set(["ID", "WA", "OR", "UT", "WY", "MT", "CO", "AZ"]);
+// Constants for field inference (matching Python pipeline exactly)
+const US_REGIONS = {
+  "Northeast": new Set(["ME", "NH", "VT", "MA", "RI", "CT", "NY", "NJ", "PA"]),
+  "Midwest": new Set(["OH", "IN", "IL", "MI", "WI", "MN", "IA", "MO", "ND", "SD", "NE", "KS"]),
+  "South": new Set(["DE", "MD", "DC", "VA", "WV", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LA", "OK", "TX"]),
+  "West": new Set(["MT", "ID", "WY", "CO", "NM", "AZ", "UT", "NV", "WA", "OR", "CA", "AK", "HI"])
+};
+
+// All US states and territories for target filtering
+const TARGET_STATES = new Set();
+for (const regionStates of Object.values(US_REGIONS)) {
+  for (const state of regionStates) {
+    TARGET_STATES.add(state);
+  }
+}
+
+// State name to abbreviation mapping for additional inference
+const STATE_NAMES = {
+  'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+  'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+  'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+  'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+  'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+  'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+  'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+  'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+  'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+  'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY',
+  'district of columbia': 'DC'
+};
 
 const ENTRY_LEVEL_TITLE_HINTS = [
   "coordinator", "representative", "specialist", "assistant", "associate",
@@ -21,13 +49,56 @@ const CAREER_TRACK_RULES = [
   ["Hospital Administration", [/patient access/i, /registration/i, /scheduler/i, /scheduling/i, /clinic/i, /front desk/i, /revenue cycle/i, /billing/i, /referral/i, /prior auth/i, /authorization/i, /him/i, /health information/i]]
 ];
 
-// Inference functions (matching Python pipeline logic)
-function inferState(location) {
-  if (!location) return null;
-  const match = location.match(/\b([A-Z]{2})\b/);
-  if (match && TARGET_STATES.has(match[1])) {
-    return match[1];
+// Helper function to get region for a state
+function getStateRegion(stateCode) {
+  if (!stateCode) return null;
+  stateCode = stateCode.toUpperCase().trim();
+  for (const [region, states] of Object.entries(US_REGIONS)) {
+    if (states.has(stateCode)) {
+      return region;
+    }
   }
+  return null;
+}
+
+// Enhanced state inference function
+function inferState(location, company, jobTitle) {
+  if (!location && !company && !jobTitle) return null;
+  
+  const searchText = [location, company, jobTitle].filter(Boolean).join(' ');
+  
+  // First try to find state abbreviation (case insensitive)
+  const match = searchText.match(/\b([A-Za-z]{2})\b/);
+  if (match && TARGET_STATES.has(match[1].toUpperCase())) {
+    return match[1].toUpperCase();
+  }
+  
+  // Try to find state name
+  const searchTextLower = searchText.toLowerCase();
+  for (const [stateName, stateCode] of Object.entries(STATE_NAMES)) {
+    if (searchTextLower.includes(stateName)) {
+      return stateCode;
+    }
+  }
+  
+  // Extract from location patterns like "Kansas (Hybrid work available)"
+  if (location) {
+    const locationPatterns = [
+      /location[:\s]+([a-z\s]+?)(?:\s*\(|$)/i,
+      /^([a-z\s]+?)(?:\s*\(|,|$)/i
+    ];
+    
+    for (const pattern of locationPatterns) {
+      const locationMatch = location.match(pattern);
+      if (locationMatch) {
+        const locationName = locationMatch[1].trim().toLowerCase();
+        if (STATE_NAMES[locationName]) {
+          return STATE_NAMES[locationName];
+        }
+      }
+    }
+  }
+  
   return null;
 }
 
@@ -83,12 +154,61 @@ function extractFromHTML(htmlContent) {
   const titleTag = $('title').text();
   result.jobTitle = titleTag.replace(' - Indeed.com', '').trim() || 'N/A';
 
-  // Company from meta
-  result.company = $('meta[property="og:description"]').attr('content') || $('meta[name="twitter:description"]').attr('content') || 'N/A';
+  // Company from multiple sources
+  result.company = $('meta[property="og:description"]').attr('content') || 
+                  $('meta[name="twitter:description"]').attr('content') ||
+                  $('h3').first().text().trim() ||
+                  'N/A';
 
-  // Location from title or meta
-  const locationMatch = titleTag.match(/ - ([^,]+, \w+)/);
-  result.location = locationMatch ? locationMatch[1] : 'N/A';
+  // Enhanced Location extraction from multiple sources
+  let location = 'N/A';
+  
+  // Try location from title first (format: "Job Title - Company - Location")
+  const titleLocationMatch = titleTag.match(/ - ([^,]+, \w+)$/);
+  if (titleLocationMatch) {
+    location = titleLocationMatch[1];
+  } else {
+    // Look for location in content
+    const locationPatterns = [
+      /<strong>Location:<\/strong>\s*([^<]+)/i,
+      /location[:\s]+([^<\n]+)/i,
+      /based in[:\s]+([^<\n]+)/i,
+      /work from[:\s]+([^<\n]+)/i
+    ];
+    
+    for (const pattern of locationPatterns) {
+      const match = htmlContent.match(pattern);
+      if (match && match[1].trim()) {
+        location = match[1].trim();
+        break;
+      }
+    }
+  }
+  result.location = location;
+
+  // Enhanced state and region extraction
+  const extractedState = inferState(location, result.company, result.jobTitle);
+  result.state = extractedState;
+  result.region = getStateRegion(extractedState);
+  
+  // Extract city from location
+  let city = 'N/A';
+  if (location && location !== 'N/A') {
+    // Try to extract city from "City, State" format
+    const cityStateMatch = location.match(/^([^,]+),?\s*([A-Z]{2})?/);
+    if (cityStateMatch) {
+      city = cityStateMatch[1].trim();
+      // Remove common prefixes/suffixes
+      city = city.replace(/^\s*(location[:\s]*|based in[:\s]*)/i, '').trim();
+    } else {
+      // Fallback to first part of location
+      const firstPart = location.split(/[,(]/)[0].trim();
+      if (firstPart.length > 0 && firstPart.toLowerCase() !== 'remote') {
+        city = firstPart.replace(/^\s*(location[:\s]*|based in[:\s]*)/i, '').trim();
+      }
+    }
+  }
+  result.city = city;
 
   // Job Description - collect plain text divs without CSS classes, deduplicate and format
   let descLines = [];
@@ -254,8 +374,7 @@ function extractFromHTML(htmlContent) {
   }
   result.date = date === 'N/A' ? null : date;
 
-  // Add missing fields to match Python pipeline schema
-  result.state = inferState(result.location);
+  // Add missing fields to match Python pipeline schema (state and region already set above)
   result.remoteFlag = inferRemoteFlag(result.location);
   result.sourcePlatform = "html";
   result.careerTrack = inferCareerTrack(result.jobDescription + " " + result.qualifications);
