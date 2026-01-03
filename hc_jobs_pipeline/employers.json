@@ -3,6 +3,7 @@
   { "company": "Included Health", "platform": "lever", "slug": "includedhealth" },
   { "company": "Lyra Health", "platform": "lever", "slug": "lyrahealth" },
   { "company": "Planned Parenthood Association of Utah", "platform": "lever", "slug": "ppau" },
+  { "company": "Aledade", "platform": "lever", "slug": "aledade" },
 
   { "company": "Charlie Health", "platform": "greenhouse", "slug": "charliehealth" },
   { "company": "Midi Health", "platform": "greenhouse", "slug": "midihealth" },
@@ -10,21 +11,30 @@
   { "company": "Guidelight Health", "platform": "greenhouse", "slug": "guidelighthealth" },
   { "company": "Sandstone Care", "platform": "greenhouse", "slug": "sandstonecare" },
   { "company": "Kindbridge", "platform": "greenhouse", "slug": "kindbridgecorporation" },
-
   { "company": "Capital Rx (Judi Health)", "platform": "greenhouse", "slug": "capitalrx" },
   { "company": "Ceribell", "platform": "greenhouse", "slug": "ceribell" },
   { "company": "Vail Health Hospital", "platform": "greenhouse", "slug": "vailclinicincdbavailhealthhospital" },
   { "company": "Sideby Care", "platform": "greenhouse", "slug": "sidebycare" },
-
-  { "company": "Clinical Health Network For Transformation", "platform": "lever", "slug": "ClinicalHealthNetworkForTransformation" },
-  { "company": "Everlywell", "platform": "lever", "slug": "everlywell" },
-  { "company": "myPlace Health", "platform": "lever", "slug": "myPlaceHealth" },
-
-  { "company": "Prosper Health", "platform": "greenhouse", "slug": "prosperhealth" },
+  { "company": "Headway", "platform": "greenhouse", "slug": "headway" },
+  { "company": "Alma", "platform": "greenhouse", "slug": "alma" },
+  { "company": "One Medical", "platform": "greenhouse", "slug": "onemedical" },
+  { "company": "Carbon Health", "platform": "greenhouse", "slug": "carbonhealth" },
+  { "company": "Cityblock Health", "platform": "greenhouse", "slug": "cityblockhealth" },
+  { "company": "Oak Street Health", "platform": "greenhouse", "slug": "oakstreethealth" },
   { "company": "Cohere Health", "platform": "greenhouse", "slug": "coherehealth" },
   { "company": "Spring Health", "platform": "greenhouse", "slug": "springhealth66" },
-  { "company": "Hone Health", "platform": "greenhouse", "slug": "honehealth" },
   { "company": "Modern Health", "platform": "greenhouse", "slug": "modernhealth" },
-  { "company": "Find HealthCareers", "platform": "greenhouse", "slug": "find" },
-  { "company": "Pyramid Healthcare", "platform": "greenhouse", "slug": "1pyra%29mid_health%26care" }
+  { "company": "Hone Health", "platform": "greenhouse", "slug": "honehealth" },
+  { "company": "Color Health", "platform": "greenhouse", "slug": "colorhealth" },
+  { "company": "Guardant Health", "platform": "greenhouse", "slug": "guardanthealth" },
+  { "company": "Tempus", "platform": "greenhouse", "slug": "tempus" },
+  { "company": "Invitae", "platform": "greenhouse", "slug": "invitae" },
+  { "company": "Forward Health", "platform": "greenhouse", "slug": "forward" },
+  { "company": "Crossover Health", "platform": "greenhouse", "slug": "crossoverhealth" },
+  { "company": "Parsley Health", "platform": "greenhouse", "slug": "parsleyhealth" },
+  { "company": "Brightline", "platform": "greenhouse", "slug": "brightline" },
+  { "company": "Clover Health", "platform": "greenhouse", "slug": "cloverhealth" },
+  { "company": "Alignment Healthcare Services", "platform": "greenhouse", "slug": "alignmenthealthcareservices" },
+  { "company": "Signify Health", "platform": "greenhouse", "slug": "signifyhealth" },
+  { "company": "VillageMD", "platform": "greenhouse", "slug": "villagemd" }
 ]

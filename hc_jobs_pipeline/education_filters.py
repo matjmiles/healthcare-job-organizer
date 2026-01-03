@@ -173,6 +173,72 @@ ADVANCED_DEGREE_PATTERNS = [
     r"pharmd" # Doctor of Pharmacy
 ]
 
+# === HIGH EXPERIENCE REQUIREMENTS (Exclude) ===
+# These indicate positions requiring too much experience for entry-level candidates
+# We want entry-level positions with 0-2 years experience only
+
+HIGH_EXPERIENCE_PATTERNS = [
+    # 3+ years and higher experience requirements
+    r"3\+? years? experience",
+    r"4\+? years? experience",
+    r"5\+? years? experience",
+    r"6\+? years? experience", 
+    r"7\+? years? experience",
+    r"8\+? years? experience",
+    r"9\+? years? experience",
+    r"10\+? years? experience",
+    r"15\+? years? experience", 
+    r"20\+? years? experience",
+    
+    # Same patterns with "of experience"
+    r"3\+? years? of experience",
+    r"4\+? years? of experience",
+    r"5\+? years? of experience",
+    r"6\+? years? of experience",
+    r"7\+? years? of experience",
+    r"8\+? years? of experience",
+    r"9\+? years? of experience", 
+    r"10\+? years? of experience",
+    r"15\+? years? of experience",
+    r"20\+? years? of experience",
+    
+    # Range patterns that exclude entry-level
+    r"1-3 years? experience",
+    r"1-4 years? experience", 
+    r"1-5 years? experience",
+    r"2-3 years? experience",
+    r"2-4 years? experience",
+    r"2-5 years? experience",
+    r"3-5 years? experience",
+    r"4-6 years? experience", 
+    r"5-7 years? experience",
+    r"1 to 3 years? experience",
+    r"1 to 4 years? experience",
+    r"1 to 5 years? experience", 
+    r"2 to 3 years? experience",
+    r"2 to 4 years? experience",
+    r"2 to 5 years? experience",
+    r"3 to 5 years? experience",
+    r"4 to 6 years? experience",
+    r"5 to 7 years? experience",
+    
+    # Minimum experience patterns (2+ years and higher)
+    r"minimum.{0,10}2.{0,5}years?",
+    r"minimum.{0,10}3.{0,5}years?",
+    r"minimum.{0,10}4.{0,5}years?", 
+    r"minimum.{0,10}5.{0,5}years?",
+    
+    # General high experience terms
+    r"several years? experience",
+    r"multiple years? experience", 
+    r"many years? experience",
+    r"extensive experience",
+    r"significant experience",
+    r"substantial experience",
+    r"decade of experience",
+    r"decades of experience"
+]
+
 # === BACHELOR'S PREFERRED PATTERNS ===
 # These are positive indicators where bachelor's degree is preferred but not required
 
@@ -199,6 +265,7 @@ CONTEXT_EXCLUSIONS = [
 PATTERN_WEIGHTS = {
     'healthcare_admin_bachelors': 10,  # Highest priority
     'advanced_degree': -100,          # Strict exclude - overqualified positions
+    'high_experience': -100,          # Strict exclude - overqualified positions
     'bachelors_required': 6,          # Strong inclusion
     'bachelors_mentioned': 4,         # Moderate inclusion
     'bachelors_preferred': 5,         # Strong inclusion for preferred positions  
@@ -231,6 +298,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     matches = {
         'healthcare_admin_bachelors': [],
         'advanced_degree': [],
+        'high_experience': [],
         'bachelors_required': [],
         'bachelors_mentioned': [],
         'bachelors_preferred': [],
@@ -274,6 +342,12 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             matches['advanced_degree'].append(pattern)
             score += PATTERN_WEIGHTS['advanced_degree']
     
+    # Check high experience requirements (overqualified positions)
+    for pattern in HIGH_EXPERIENCE_PATTERNS:
+        if re.search(pattern, full_text, re.IGNORECASE):
+            matches['high_experience'].append(pattern)
+            score += PATTERN_WEIGHTS['high_experience']
+    
     # Check bachelor's degree patterns
     for pattern in BACHELORS_PATTERNS:
         if re.search(pattern, full_text, re.IGNORECASE):
@@ -307,10 +381,11 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             matches['context_exclusion'].append(pattern)
             score += PATTERN_WEIGHTS['context_exclusion']
     
-    # FINAL INCLUSION LOGIC: Three simple rules
+    # FINAL INCLUSION LOGIC: Four simple rules
     # 1. Include ANY job where bachelor's degree is mentioned
     # 2. Exclude jobs with only high school/associates (no bachelor's mention)
     # 3. Exclude advanced degree requirements (overqualified)
+    # 4. Exclude high experience requirements (overqualified)
     
     has_bachelors = (len(matches['healthcare_admin_bachelors']) > 0 or 
                      len(matches['bachelors_required']) > 0 or 
@@ -318,6 +393,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
                      len(matches['bachelors_preferred']) > 0)
     has_high_school = len(matches['high_school_only']) > 0
     has_advanced_degree = len(matches['advanced_degree']) > 0
+    has_high_experience = len(matches['high_experience']) > 0
     
     # Rule 1: If bachelor's mentioned, include it (override any negative scoring)
     if has_bachelors:
@@ -331,6 +407,10 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     if has_advanced_degree:
         score = -100
     
+    # Rule 4: Strict exclusion for high experience requirements (overqualified)
+    if has_high_experience:
+        score = -100
+    
     # Final decision: include if positive score and not overqualified
     should_include = score > 0
     
@@ -341,6 +421,8 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
         reasoning_parts.append("Healthcare administration degree mentioned")
     if matches['advanced_degree']:
         reasoning_parts.append("Advanced degree required (overqualified)")
+    if matches['high_experience']:
+        reasoning_parts.append("High experience required (overqualified)")
     if matches['bachelors_required']:
         reasoning_parts.append("Bachelor's degree explicitly required")
     if matches['bachelors_mentioned']:

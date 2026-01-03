@@ -10,9 +10,148 @@ from dateutil import parser as dtparser
 from rapidfuzz import fuzz
 
 # Import our education filtering logic
-from education_filters import meets_bachelors_requirement, analyze_education_requirements
-from relaxed_education_filters import meets_relaxed_education_requirement
+from simplified_education_filters import meets_simplified_education_requirement
 from enhanced_qualifications import QualificationsExtractor
+
+def meets_entry_level_requirement(job_description: str, title: str, qualifications: str = "") -> bool:
+    """
+    Entry-level focused filtering for recent graduates with healthcare admin degrees.
+
+    INCLUDES:
+    - Jobs explicitly marked as entry-level
+    - Jobs requiring 0-2 years experience
+    - Jobs where bachelor's degree is preferred (not required)
+    - Jobs with internship/trainee/coordinator titles
+    - Healthcare admin roles with reasonable experience requirements
+
+    EXCLUDES:
+    - Jobs requiring advanced degrees (Master's/PhD)
+    - Jobs requiring 3+ years experience
+    - Senior/executive positions
+    - Clinical roles (RN, NP, etc.)
+    """
+    full_text = f"{job_description} {qualifications}".lower()
+    title_lower = (title or "").lower()
+
+    # EXCLUDE: Advanced degree requirements
+    advanced_degree_patterns = [
+        r"master'?s? degree.{0,20}required",
+        r"masters? required",
+        r"mba required",
+        r"mha required",
+        r"mph required",
+        r"doctoral? degree required",
+        r"ph\.?d\.? required",
+        r"doctorate required"
+    ]
+
+    for pattern in advanced_degree_patterns:
+        if re.search(pattern, full_text, re.IGNORECASE):
+            return False
+
+    # EXCLUDE: High experience requirements (3+ years)
+    # Recent graduates typically have 0-2 years experience max
+    high_exp_patterns = [
+        r"3\+? years? experience",
+        r"4\+? years? experience",
+        r"5\+? years? experience",
+        r"6\+? years? experience",
+        r"7\+? years? experience",
+        r"8\+? years? experience",
+        r"9\+? years? experience",
+        r"10\+? years? experience"
+    ]
+
+    for pattern in high_exp_patterns:
+        if re.search(pattern, full_text, re.IGNORECASE):
+            return False
+
+    # EXCLUDE: Senior/executive positions
+    senior_patterns = [
+        r"\bdirector\b",
+        r"\bsenior director\b",
+        r"\bvp\b",
+        r"vice president",
+        r"\bchief\b",
+        r"\bcfo\b",
+        r"\bcoo\b",
+        r"\bceo\b",
+        r"senior manager",
+        r"sr manager",
+        r"principal"
+    ]
+
+    for pattern in senior_patterns:
+        if re.search(pattern, title_lower):
+            return False
+
+    # INCLUDE: Entry-level indicators (focused on recent graduates)
+    entry_level_indicators = [
+        # Experience patterns (0-2 years max)
+        r"\bentry[-\s]?level\b",
+        r"\b0\s?[-–]\s?1\s?year\b",
+        r"\b0\s?[-–]\s?2\s?years?\b",
+        r"\b1\s?[-–]\s?2\s?years?\b",
+        r"\bno experience required\b",
+        r"\bno prior experience\b",
+        r"\bexperience preferred\b",
+        r"\blittle experience\b",
+        r"\bsome experience\b",
+        r"\binternship\b",
+        r"\bintern\b",
+        r"\btrainee\b",
+        r"\bgraduate\b",
+        r"\brecent graduate\b",
+        r"\bnew graduate\b",
+
+        # Title patterns (entry-level roles)
+        r"\bcoordinator\b",
+        r"\brepresentative\b",
+        r"\bspecialist\b",
+        r"\bassistant\b",
+        r"\bassociate\b",
+        r"\bclerk\b",
+        r"\bscheduler\b",
+        r"\bscheduling\b",
+        r"\bpatient access\b",
+        r"\bregistration\b",
+        r"\bfront desk\b",
+        r"\bmedical receptionist\b",
+        r"\badmin\b",
+        r"\badministrator in training\b",
+        r"\bait\b"
+    ]
+
+    for pattern in entry_level_indicators:
+        if re.search(pattern, full_text, re.IGNORECASE) or re.search(pattern, title_lower):
+            return True
+
+    # INCLUDE: Bachelor's preferred (not required)
+    bachelors_preferred_patterns = [
+        r"bachelor.{0,20}preferred",
+        r"preferred.{0,20}bachelor",
+        r"bachelor.{0,20}a plus",
+        r"bachelor.{0,20}plus",
+        r"bachelor.{0,20}helpful",
+        r"bachelor.{0,20}desirable"
+    ]
+
+    for pattern in bachelors_preferred_patterns:
+        if re.search(pattern, full_text, re.IGNORECASE):
+            return True
+
+    # INCLUDE: Healthcare admin roles with reasonable requirements
+    if re.search(r"healthcare administration|health care administration|hospital administration|medical administration|patient access|registration|scheduler|billing|revenue cycle", full_text, re.IGNORECASE):
+        # Check if experience is reasonable (not explicitly requiring 3+ years)
+        if not re.search(r"minimum.{0,10}3.{0,5}years?|at least.{0,10}3.{0,5}years?", full_text, re.IGNORECASE):
+            return True
+
+    # DEFAULT: If bachelor's is mentioned in any context, include it
+    if re.search(r"bachelor'?s? degree", full_text, re.IGNORECASE):
+        return True
+
+    # If no clear indicators either way, be conservative and exclude
+    return False
 
 # US Census Bureau regions and states
 US_REGIONS = {
@@ -321,13 +460,26 @@ def in_scope_state(location: str) -> bool:
     return st in TARGET_STATES
 
 def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
-    """Check if job looks like health admin role. Returns (passes, reason)."""
-    # Include admin-support roles; exclude obviously clinical roles
+    """Check if job looks like health admin role suitable for recent graduates. Returns (passes, reason)."""
+    # Include admin-support roles; exclude obviously clinical roles and software/engineering roles
     combined = (title + "\n" + (text or "")).lower()
 
     # Exclude clinical-heavy roles by keyword
     if re.search(r"\bregistered nurse\b|\brn\b|\bnurse practitioner\b|\bnp\b|\bphysician\b|\bmd\b|\bpharm\b|\btherapist\b", combined):
         return False, "clinical_roles"
+
+    # Exclude software development/engineering roles by keyword
+    software_patterns = [
+        r"\bsoftware developer\b", r"\bsoftware engineer\b", r"\bdeveloper\b", r"\bengineer\b",
+        r"\bprogrammer\b", r"\bdevops\b", r"\bfull stack\b", r"\bfront[- ]end\b", r"\bback[- ]end\b",
+        r"\bcloud engineer\b", r"\bsecurity engineer\b", r"\bdata engineer\b", r"\bdata scientist\b",
+        r"\bweb developer\b", r"\bapplication developer\b", r"\bmobile developer\b", r"\bqa engineer\b",
+        r"\btest engineer\b", r"\barchitect\b.*\bsoftware\b", r"\bplatform engineer\b"
+    ]
+
+    for pattern in software_patterns:
+        if re.search(pattern, combined):
+            return False, "software_roles"
 
     # Require at least one admin-ish hint
     admin_hints = [
@@ -337,16 +489,15 @@ def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
         "health information", "admissions", "intake", "case management assistant", "bed management", "ait"
     ]
     admin_check = any(h in combined for h in admin_hints)
-    
+
     if not admin_check:
         return False, "no_admin_keywords"
-    
-    # Check education requirements - use strict bachelor's degree filter
-    education_check = meets_bachelors_requirement(text or "")
-    
+
+    # NEW: Apply entry-level education filtering
+    education_check = meets_entry_level_requirement(text, title, "")
     if not education_check:
         return False, "education_requirements"
-    
+
     return True, "passes"
 
 async def collect() -> None:
@@ -404,6 +555,12 @@ async def collect() -> None:
                              filtering_stats["filtered_out"][reason] += 1
                              continue
 
+                         # Check education requirements - simplified filter
+                         education_check = meets_simplified_education_requirement(title + "\n" + desc)
+                         if not education_check:
+                             filtering_stats["filtered_out"]["education_requirements"] += 1
+                             continue
+
                          # Check if job is in US (allow all US states, filter international)
                          state = infer_state(loc)
                          if not state or state not in TARGET_STATES:
@@ -455,6 +612,12 @@ async def collect() -> None:
                          admin_check, reason = looks_like_health_admin(title, desc)
                          if not admin_check:
                              filtering_stats["filtered_out"][reason] += 1
+                             continue
+
+                         # Check education requirements - simplified filter
+                         education_check = meets_simplified_education_requirement(title + "\n" + desc)
+                         if not education_check:
+                             filtering_stats["filtered_out"]["education_requirements"] += 1
                              continue
 
                          # Check if job is in US (allow all US states, filter international)
