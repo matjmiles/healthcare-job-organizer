@@ -109,6 +109,8 @@ function formatDate(dateStr) {
   }
 }
 
+// Note: Manual JSON files are pre-filtered by humans, so no additional filtering is applied
+
 jobs.forEach(job => {
    const cleanTitle = job.jobTitle.split(' - ')[0];
    const formattedQualifications = formatQualifications(job.qualifications);

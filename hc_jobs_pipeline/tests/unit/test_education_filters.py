@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Unit Tests for Education Filtering Logic
-========================================
+=======================================
 Tests the bachelor's degree requirement filtering with comprehensive test cases.
 """
 
@@ -9,15 +9,13 @@ import sys
 import os
 
 # Add the parent directory (hc_jobs_pipeline) to the path
-current_dir = os.path.dirname(__file__)
-parent_dir = os.path.dirname(os.path.dirname(current_dir))
-sys.path.insert(0, parent_dir)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from education_filters import analyze_education_requirements, meets_bachelors_requirement
 
 class TestEducationFilters:
     """Test class for education filtering functionality"""
-    
+
     def __init__(self):
         self.passed = 0
         self.failed = 0
@@ -34,68 +32,68 @@ class TestEducationFilters:
             ("No degree required, experience preferred", False, "No degree required"),
             ("Bachelor's or equivalent experience", True, "Bachelor's or equivalent")
         ]
-    
+
     def run_test(self, description: str, expected: bool, test_name: str) -> bool:
         """Run a single test case"""
         try:
             result = meets_bachelors_requirement(description, "")
             analysis = analyze_education_requirements(description, "")
-            
+
             if result == expected:
-                print(f"✅ PASS: {test_name}")
+                print(f"PASS: {test_name}")
                 print(f"   Input: {description[:50]}...")
                 print(f"   Expected: {expected}, Got: {result}")
                 print(f"   Score: {analysis['score']}, Reason: {analysis['reasoning'][:60]}...")
                 self.passed += 1
                 return True
             else:
-                print(f"❌ FAIL: {test_name}")
+                print(f"FAIL: {test_name}")
                 print(f"   Input: {description[:50]}...")
                 print(f"   Expected: {expected}, Got: {result}")
                 print(f"   Score: {analysis['score']}, Reason: {analysis['reasoning']}")
                 print(f"   Matches: {analysis['matches']}")
                 self.failed += 1
                 return False
-                
+
         except Exception as e:
-            print(f"💥 ERROR: {test_name}")
+            print(f"ERROR: {test_name}")
             print(f"   Exception: {e}")
             self.failed += 1
             return False
-    
+
     def run_all_tests(self):
         """Run all education filter tests"""
-        print("🎓 UNIT TESTS: Education Filters")
+        print("UNIT TESTS: Education Filters")
         print("=" * 50)
-        
+
         for description, expected, test_name in self.test_cases:
             self.run_test(description, expected, test_name)
             print()
-        
+
         self.print_summary()
-    
+
     def print_summary(self):
         """Print test results summary"""
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
-        
+
         print("=" * 50)
-        print(f"📊 Education Filter Test Results")
+        print(f"Education Filter Test Results")
         print(f"Total Tests: {total}")
-        print(f"✅ Passed: {self.passed}")
-        print(f"❌ Failed: {self.failed}")
+        print(f"Passed: {self.passed}")
+        print(f"Failed: {self.failed}")
         print(f"Success Rate: {success_rate:.1f}%")
-        
+
         if self.failed == 0:
-            print("🎉 All education filter tests passed!")
+            print("All education filter tests passed!")
         else:
-            print(f"⚠️  {self.failed} test(s) failed - review filtering logic")
+            print(f"{self.failed} test(s) failed - review filtering logic")
 
 def run_edge_case_tests():
     """Test edge cases and boundary conditions"""
-    print("\n🔬 EDGE CASE TESTS")
+    print("\nEDGE CASE TESTS")
     print("=" * 30)
-    
+
     edge_cases = [
         ("", False, "Empty string"),
         ("bachelor", True, "Single word 'bachelor'"),
@@ -105,30 +103,58 @@ def run_edge_case_tests():
         ("Must have college degree (4-year university)", True, "Implied bachelor's via 4-year"),
         ("Graduate degree preferred, bachelor's minimum", False, "Graduate preferred (overqualified)"),
     ]
-    
+
     tester = TestEducationFilters()
     for description, expected, test_name in edge_cases:
         tester.run_test(description, expected, test_name)
-    
+
     return tester.failed == 0
+
+def debug_no_degree_case():
+    """Debug the specific failing case"""
+    print("\nDEBUGGING: 'No degree required' case")
+    print("=" * 40)
+
+    description = "No degree required, experience preferred"
+    analysis = analyze_education_requirements(description, "")
+
+    print(f"Input: {description}")
+    print(f"Result: {analysis['should_include']} (expected: False)")
+    print(f"Score: {analysis['score']}")
+    print(f"Reasoning: {analysis['reasoning']}")
+    print(f"Matches: {analysis['matches']}")
+
+    # Check what patterns are matching
+    from education_filters import HIGH_SCHOOL_PATTERNS
+    import re
+
+    print(f"\nPattern matches for 'high_school_only':")
+    for pattern in HIGH_SCHOOL_PATTERNS:
+        if re.search(pattern, description.lower(), re.IGNORECASE):
+            print(f"  MATCH: {pattern}")
+
+    return analysis['should_include'] == False
 
 def main():
     """Main test execution"""
+    # Debug the failing case first
+    debug_success = debug_no_degree_case()
+
     # Run standard tests
     tester = TestEducationFilters()
     tester.run_all_tests()
-    
+
     # Run edge case tests
     edge_success = run_edge_case_tests()
-    
+
     # Overall result
-    overall_success = tester.failed == 0 and edge_success
-    
+    overall_success = tester.failed == 0 and edge_success and debug_success
+
     if overall_success:
-        print("\n🎉 ALL EDUCATION FILTER TESTS PASSED!")
+        print("\nALL EDUCATION FILTER TESTS PASSED!")
         return 0
     else:
-        print(f"\n💥 SOME TESTS FAILED - Review filtering logic")
+        print(f"\nSOME TESTS FAILED - Review filtering logic")
         return 1
 
 if __name__ == "__main__":

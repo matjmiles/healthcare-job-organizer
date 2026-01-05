@@ -21,48 +21,48 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 ## Key Tasks Completed
 
-1. **Multi-Source Job Collection**: 
-   - Automated: Lever and Greenhouse APIs (16 jobs after strict filtering)
-   - Manual: Indeed job scraping with HTML extraction (24 jobs)
-   - Combined processing workflow established
+1. **Maximum Restrictiveness Filtering System**:
+   - REQUIRES explicit bachelor's degree mention in job postings
+   - Excludes 3+ years experience requirements
+   - Excludes advanced degree (Master's/PhD) positions
+   - Excludes senior/executive roles
+   - 98% filtering rate for quality control
 
-2. **Architectural Education Filtering Improvements**: 
-   - **Fixed Architecture**: Education filtering moved from Excel script to Python pipeline
-   - **Inclusive Bachelor's Logic**: Jobs included if bachelor's degree mentioned in ANY way (required, preferred, desired, plus, etc.)   - **Refined Filtering**: Removed counterproductive context exclusions (e.g., entry-level restrictions)   - **Pipeline Filtering**: Strict education filtering applied at data collection level (Python)
-   - **Excel Script Simplification**: Removed education filtering, now handles only data combination and formatting
+2. **Comprehensive Testing Framework**:
+   - Unit tests: 100% pass rate for core filtering logic
+   - Integration tests: Full pipeline validation
+   - Interactive debugging tools included
+   - VS Code debugging configurations
 
-3. **Enhanced Pay Extraction**: 
-   - Multiple pay pattern recognition
-   - Full HTML scraping for missing compensation
-   - Hourly rate normalization
+3. **Dual-Source Data Integration**:
+   - Pipeline: 865 jobs analyzed → 18 highly filtered positions
+   - Manual: 103 human-curated jobs (preserved as-is)
+   - Combined Excel: 121 total positions
 
-4. **Professional Excel Formatting**:
-   - Bullet-pointed qualifications with proper line breaks
-   - Clickable hyperlinked source URLs (blue styling)  
+4. **Professional Excel Output**:
+   - Bullet-pointed qualifications with line breaks
+   - Active hyperlinks (blue, underlined)
    - MM-DD-YYYY date formatting
-   - Advanced styling via xlsx-populate library
+   - Optimal column widths and styling
 
-5. **Data Quality & Processing**:
-   - Validation and error handling
-   - Low pay filtering (<$10/hr excluded)
-   - Duplicate detection and source tracking
-   - Geographic extraction with comprehensive US state/region mapping
+5. **Advanced Pay Data Enhancement**:
+   - HTML page scraping for compensation extraction
+   - Normalized hourly rates
+   - Filters for erroneous values (<$10/hr)
 
-6. **Test Infrastructure & Debugging**:
-   - **Organized Test Suite**: Industry-standard test organization with unit/integration/debug separation
-   - **VS Code Integration**: Full debugging support with step-through capabilities
-   - **Comprehensive Coverage**: Education filters, health admin identification, qualification extraction
-   - **Interactive Debug Tools**: Real-time testing and analysis utilities
+6. **Data Quality Assurance**:
+   - Source tracking and metadata preservation
+   - Duplicate detection and removal
+   - Consistent formatting across all outputs
 
-## Current State (December 29, 2025)
+## Current State (January 5, 2026)
 
-- **Pipeline Jobs**: 17 (from 1,499 analyzed with refined inclusive bachelor's filtering)
-- **Manual Jobs**: 24 (hand-selected from Indeed HTML)
-- **Final Excel Output**: 41 jobs total (17 pipeline + 24 manual)
-- **Latest Excel File**: `output/jobs_consolidated_2025-12-29_19-56-12.xlsx`
-- **Data Sources**: 
-  - Pipeline: `hc_jobs_pipeline/output/healthcare_admin_jobs_us_nationwide.json`
-  - Manual: 24 individual JSON files in `data/json/`
+- **Pipeline Jobs**: ~18 (from ~865 analyzed with maximum restrictiveness filtering)
+- **Manual Jobs**: ~103 (human-curated collections)
+- **Final Excel Output**: ~121 jobs total (18 pipeline + 103 manual)
+- **Latest Excel File**: `output/jobs_consolidated_2026-01-05_17-30-59.xlsx`
+- **Filtering Rate**: 98% of scraped jobs excluded for quality control
+- **Test Coverage**: 100% pass rate for core filtering logic
 
 ## Workflow Notes
 

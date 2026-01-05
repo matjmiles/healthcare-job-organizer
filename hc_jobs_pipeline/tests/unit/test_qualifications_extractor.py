@@ -8,8 +8,11 @@ Tests the qualification text extraction and parsing functionality.
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from enhanced_qualifications import QualificationsExtractor
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from hc_jobs_pipeline.enhanced_qualifications import QualificationsExtractor
 
 class TestQualificationsExtractor:
     """Test class for qualifications extraction"""
@@ -21,7 +24,7 @@ class TestQualificationsExtractor:
     
     def test_basic_extraction(self):
         """Test basic qualification extraction"""
-        print("📋 Testing Basic Qualification Extraction")
+        print("Testing Basic Qualification Extraction")
         
         sample_text = """
         Healthcare Operations Coordinator
@@ -45,29 +48,29 @@ class TestQualificationsExtractor:
             
             # Check that qualifications were extracted
             if len(quals) > 0:
-                print("✅ PASS: Basic extraction successful")
+                print("PASS: Basic extraction successful")
                 print(f"   Extracted {len(quals)} characters")
                 print(f"   Preview: {quals[:100]}...")
                 self.passed += 1
                 
                 # Check for key content
                 if "Bachelor's degree" in quals and "experience" in quals:
-                    print("✅ PASS: Key qualification content found")
+                    print("PASS: Key qualification content found")
                     self.passed += 1
                 else:
-                    print("❌ FAIL: Missing key qualification content")
+                    print("FAIL: Missing key qualification content")
                     self.failed += 1
             else:
-                print("❌ FAIL: No qualifications extracted")
+                print("FAIL: No qualifications extracted")
                 self.failed += 1
                 
         except Exception as e:
-            print(f"💥 ERROR: Basic extraction failed with {e}")
+            print(f"ERROR: Basic extraction failed with {e}")
             self.failed += 1
     
     def test_section_recognition(self):
         """Test recognition of different qualification section headings"""
-        print("\n📋 Testing Section Recognition")
+        print("\nTesting Section Recognition")
         
         test_sections = [
             ("Requirements:", "Basic requirements header"),
@@ -90,18 +93,18 @@ class TestQualificationsExtractor:
             try:
                 quals = self.extractor.extract_comprehensive_qualifications(test_text)
                 if len(quals) > 0 and "Bachelor's degree" in quals:
-                    print(f"✅ PASS: {test_name}")
+                    print(f"PASS: {test_name}")
                     self.passed += 1
                 else:
-                    print(f"❌ FAIL: {test_name}")
+                    print(f"FAIL: {test_name}")
                     self.failed += 1
             except Exception as e:
-                print(f"💥 ERROR: {test_name} failed with {e}")
+                print(f"ERROR: {test_name} failed with {e}")
                 self.failed += 1
     
     def test_edge_cases(self):
         """Test edge cases and boundary conditions"""
-        print("\n🔬 Testing Edge Cases")
+        print("\nTesting Edge Cases")
         
         edge_cases = [
             ("", "Empty string"),
@@ -113,15 +116,15 @@ class TestQualificationsExtractor:
         for text, test_name in edge_cases:
             try:
                 quals = self.extractor.extract_comprehensive_qualifications(text)
-                print(f"✅ PASS: {test_name} (handled gracefully)")
+                print(f"PASS: {test_name} (handled gracefully)")
                 self.passed += 1
             except Exception as e:
-                print(f"❌ FAIL: {test_name} - Exception: {e}")
+                print(f"FAIL: {test_name} - Exception: {e}")
                 self.failed += 1
     
     def run_all_tests(self):
         """Run all qualification extractor tests"""
-        print("📋 UNIT TESTS: Qualifications Extractor")
+        print("UNIT TESTS: Qualifications Extractor")
         print("=" * 50)
         
         self.test_basic_extraction()
@@ -136,16 +139,16 @@ class TestQualificationsExtractor:
         success_rate = (self.passed / total * 100) if total > 0 else 0
         
         print("\n" + "=" * 50)
-        print(f"📊 Qualifications Extractor Test Results")
+        print(f"Qualifications Extractor Test Results")
         print(f"Total Tests: {total}")
-        print(f"✅ Passed: {self.passed}")
-        print(f"❌ Failed: {self.failed}")
+        print(f"Passed: {self.passed}")
+        print(f"Failed: {self.failed}")
         print(f"Success Rate: {success_rate:.1f}%")
         
         if self.failed == 0:
-            print("🎉 All qualification extractor tests passed!")
+            print("All qualification extractor tests passed!")
         else:
-            print(f"⚠️  {self.failed} test(s) failed - review extraction logic")
+            print(f"WARNING: {self.failed} test(s) failed - review extraction logic")
 
 def main():
     """Main test execution"""
@@ -153,10 +156,10 @@ def main():
     tester.run_all_tests()
     
     if tester.failed == 0:
-        print("\n🎉 ALL QUALIFICATION EXTRACTOR TESTS PASSED!")
+        print("\nALL QUALIFICATION EXTRACTOR TESTS PASSED!")
         return 0
     else:
-        print(f"\n💥 SOME TESTS FAILED - Review extraction logic")
+        print(f"\nSOME TESTS FAILED - Review extraction logic")
         return 1
 
 if __name__ == "__main__":

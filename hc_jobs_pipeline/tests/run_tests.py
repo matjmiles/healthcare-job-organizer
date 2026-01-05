@@ -156,7 +156,7 @@ def main():
     
     start_time = time.time()
     
-    print("🧬 Healthcare Admin Jobs Pipeline - Test Suite")
+    print("Healthcare Admin Jobs Pipeline - Test Suite")
     print("=" * 60)
     
     unit_results = {"passed": 0, "failed": 0, "tests": []}

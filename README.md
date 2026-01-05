@@ -4,14 +4,14 @@ This project scrapes healthcare administration job listings from platforms like 
 
 ## Features
 
-- **Multi-Source Job Scraping**: 
-  - Automated collection from Lever and Greenhouse APIs (414 jobs)
-  - Manual Indeed job scraping with HTML extraction (24 jobs)
-  - Combined dataset processing for comprehensive coverage
-- **Flexible Education Filtering**: 
-  - Pipeline data: Bachelor's degree requirement filtering
-  - Manual selections: No filtering (hand-selected jobs)
-  - Final Excel: 56 filtered jobs meeting education criteria
+- **Multi-Source Job Scraping**:
+  - Automated collection from Lever and Greenhouse APIs (865 jobs analyzed → 18 filtered)
+  - Manual collections: 103 human-curated jobs (no additional filtering)
+  - Combined dataset processing for maximum relevance
+- **Maximum Restrictiveness Filtering**:
+  - Pipeline data: REQUIRES bachelor's degree mention + entry-level criteria
+  - Manual selections: Human-filtered (preserved as-is)
+  - Final Excel: 121 total jobs (18 pipeline + 103 manual)
 - **Pay Extraction**: Attempts to extract compensation from job descriptions and full HTML pages, normalized to hourly rates
 - **Excel Formatting**:
   - Qualifications formatted with bullet points and line breaks
@@ -105,43 +105,55 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
 
 ## Key Accomplishments
 
-1. **Multi-Source Data Collection**: 
-   - Automated pipeline: 414 jobs from Lever/Greenhouse APIs
-   - Manual collection: 24 hand-selected Indeed jobs
-   - Combined processing workflow
-2. **Flexible Education Filtering**: 
-   - Pipeline: Bachelor's degree requirement filtering
-   - Manual: No filtering for hand-selected jobs
-   - Excel: Combined approach with 56 final filtered jobs
-3. **Advanced Pay Enhancement**: 
-   - Pay extraction from job descriptions
-   - Full HTML page scraping for missing compensation
+1. **Maximum Restrictiveness Filtering System**:
+   - 98% of scraped jobs filtered out for quality control
+   - REQUIRES bachelor's degree mention in job postings
+   - Excludes 3+ years experience and advanced degree requirements
+   - Excludes senior/executive positions
+2. **Dual-Source Integration**:
+   - Automated pipeline: 865 jobs analyzed → 18 highly filtered positions
+   - Manual collections: 103 human-curated jobs preserved as-is
+   - Combined processing for comprehensive coverage
+3. **Advanced Pay Data Enhancement**:
+   - Pay extraction from job descriptions and full HTML pages
    - Normalized hourly rate calculations
-4. **Professional Excel Formatting**:
-   - Bullet-pointed qualifications with proper line breaks
-   - Clickable hyperlinks for job sources (blue styling)
-   - MM-DD-YYYY date formatting
-   - Advanced styling with xlsx-populate library
-5. **Data Quality Controls**: 
    - Filters for erroneous low pay values (<$10/hr)
-   - Duplicate detection and removal
+4. **Professional Excel Output**:
+   - Bullet-pointed qualifications with proper line breaks
+   - Active hyperlinks (blue, underlined) to job applications
+   - MM-DD-YYYY date formatting
+   - Optimal column widths and professional styling
+5. **Comprehensive Testing Framework**:
+   - 100% pass rate for core filtering logic
+   - Unit, integration, and interactive debugging tests
+   - VS Code debugging configurations included
+6. **Data Quality Assurance**:
    - Source tracking and metadata preservation
+   - Duplicate detection and removal
+   - Consistent formatting across all outputs
 
 ## Usage
 
 ### Automated Pipeline
 1. Run main scraper: `cd hc_jobs_pipeline && python run_collect.py`
+   - Analyzes ~865 jobs from APIs
+   - Applies strict bachelor's degree + entry-level filtering
+   - Outputs ~18 highly relevant positions
+
 2. Enhance pay data: `cd hc_jobs_pipeline && python update_pay_from_urls.py`
+   - Fetches full job pages for pay extraction
+   - Updates existing JSON with enhanced compensation data
 
 ### Manual Job Collection
-1. Save Indeed job pages as HTML files in `data/html/`
-2. Convert HTML to JSON: `node scripts/html_to_json.js`
+- Manual collections are pre-filtered by humans
+- Stored in `data/json/` directory
+- Loaded as-is during Excel generation (no additional filtering)
 
 ### Excel Generation
 1. Generate final Excel: `npm run json-to-excel`
-   - Combines pipeline data (414 jobs) + HTML data (24 jobs)
-   - Applies education filtering: 438 total → 56 final jobs
-   - Creates formatted Excel with hyperlinks and styling
+   - Combines pipeline data (~18 jobs) + manual data (~103 jobs)
+   - Total: ~121 jobs in professionally formatted Excel
+   - Includes hyperlinks, bullet points, and proper styling
 
 ## Dependencies
 

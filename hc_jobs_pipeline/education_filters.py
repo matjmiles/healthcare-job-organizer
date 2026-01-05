@@ -68,7 +68,10 @@ BACHELORS_PATTERNS = [
     r"bachelor degree",
     r"baccalaureate degree",
     r"undergraduate degree",
-    
+
+    # Just "bachelor's" or "bachelor" alone
+    r"\bbachelor'?s?\b",
+
     # Common bachelor's abbreviations
     r"b\.a\.",
     r"b\.s\.",
@@ -76,29 +79,36 @@ BACHELORS_PATTERNS = [
     r"bs degree",
     r"ba/bs",
     r"bs/ba",
-    
+
     # Four-year degree references
     r"four.year degree",
-    r"4.year degree", 
+    r"4.year degree",
     r"four.year college",
     r"4.year college",
     r"four.year university",
     r"4.year university",
-    
+
     # University/college degree (when clearly bachelor's level)
     r"university degree",
     r"college degree",
-    
+
     # Professional bachelor's degrees
     r"bba",  # Bachelor of Business Administration
     r"bsn",  # Bachelor of Science in Nursing
     r"bha",  # Bachelor of Healthcare Administration
     r"bhsa", # Bachelor of Health Services Administration
-    
-    # Required degree language
-    r"degree required",
-    r"bachelor.{0,20}required",
-    r"required.{0,20}bachelor"
+
+    # Business/Management with Healthcare context
+    r"business administration.{0,50}healthcare",
+    r"healthcare.{0,50}business administration",
+    r"management.{0,50}healthcare",
+    r"healthcare.{0,50}management",
+
+    # Long-term care specific
+    r"long.term care administration",
+    r"nursing home administration",
+    r"assisted living administration",
+    r"skilled nursing administration"
 ]
 
 # === HEALTHCARE ADMINISTRATION SPECIFIC PATTERNS ===
@@ -309,7 +319,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
     }
     
     score = 0
-    
+
     # STRICT CHECK: If high school is mentioned as primary requirement, exclude immediately
     high_school_primary = re.search(r'high school.*required|high school diploma.*required|hs.*required|ged.*required', full_text, re.IGNORECASE)
     if high_school_primary:
@@ -319,7 +329,7 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             'matches': {'high_school_only': ['high_school_primary_requirement']},
             'reasoning': "High school diploma listed as primary requirement"
         }
-    
+
     # STRICT CHECK: If associates degree is listed as primary requirement, exclude
     associates_primary = re.search(r'associate.?s? degree.*required|aa.*required|as.*required|aas.*required', full_text, re.IGNORECASE)
     if associates_primary:
@@ -381,38 +391,43 @@ def analyze_education_requirements(job_description: str, qualifications: str = "
             matches['context_exclusion'].append(pattern)
             score += PATTERN_WEIGHTS['context_exclusion']
     
-    # FINAL INCLUSION LOGIC: Four simple rules
-    # 1. Include ANY job where bachelor's degree is mentioned
-    # 2. Exclude jobs with only high school/associates (no bachelor's mention)
-    # 3. Exclude advanced degree requirements (overqualified)
-    # 4. Exclude high experience requirements (overqualified)
-    
-    has_bachelors = (len(matches['healthcare_admin_bachelors']) > 0 or 
-                     len(matches['bachelors_required']) > 0 or 
-                     len(matches['bachelors_mentioned']) > 0 or
-                     len(matches['bachelors_preferred']) > 0)
-    has_high_school = len(matches['high_school_only']) > 0
+    # FINAL INCLUSION LOGIC: Simple prioritized rules
+    # 1. If advanced degree required -> EXCLUDE (overqualified)
+    # 2. If high experience required -> EXCLUDE (overqualified)
+    # 3. If high school/associates primary -> EXCLUDE (underqualified)
+    # 4. If bachelor's mentioned -> INCLUDE (qualified)
+    # 5. Default -> EXCLUDE (unclear)
+
+    has_bachelors = (len(matches['healthcare_admin_bachelors']) > 0 or
+                      len(matches['bachelors_required']) > 0 or
+                      len(matches['bachelors_mentioned']) > 0 or
+                      len(matches['bachelors_preferred']) > 0)
     has_advanced_degree = len(matches['advanced_degree']) > 0
     has_high_experience = len(matches['high_experience']) > 0
-    
-    # Rule 1: If bachelor's mentioned, include it (override any negative scoring)
-    if has_bachelors:
-        score = max(score, 5)  # Ensure positive score
-    
-    # Rule 2: Only exclude if high school/associates mentioned BUT no bachelor's at all
-    if has_high_school and not has_bachelors:
-        score = -100
-    
-    # Rule 3: Strict exclusion for advanced degrees (overqualified)
+    has_primary_requirement = ('high_school_primary_requirement' in matches['high_school_only'] or
+                              'associates_primary_requirement' in matches['associates_only'])
+
+    # Priority order: most restrictive first
     if has_advanced_degree:
         score = -100
-    
-    # Rule 4: Strict exclusion for high experience requirements (overqualified)
-    if has_high_experience:
+        should_include = False
+    elif has_high_experience:
         score = -100
+        should_include = False
+    elif has_primary_requirement:
+        score = -100
+        should_include = False
+    elif has_bachelors:
+        # Bachelor's mentioned in any context = INCLUDE
+        score = 10
+        should_include = True
+    else:
+        # No clear signals = EXCLUDE
+        score = 0
+        should_include = False
     
-    # Final decision: include if positive score and not overqualified
-    should_include = score > 0
+    # Final decision based on the rules above
+    # should_include is already set in the rules above
     
     # Generate reasoning
     reasoning_parts = []
