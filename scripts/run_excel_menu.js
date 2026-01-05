@@ -3,27 +3,32 @@ const readline = require('readline');
 
 const menuOptions = [
   {
-    label: '1. Generate Excel from manual JSON only (data/json/manual)',
+    label: '1. Convert Word documents to JSON (data/word/ → data/json/word/)',
+    script: 'word_to_json.js',
+    description: 'Converts Word document files (.docx) in data/word/ to JSON format in data/json/word/.'
+  },
+  {
+    label: '2. Generate Excel from manual JSON only (data/json/manual)',
     script: 'json_to_excel_manual.js',
     description: 'Creates an Excel file from only the JSON files in data/json/manual (manual/HTML jobs).'
   },
   {
-    label: '2. Generate Excel from webScrape JSON only (data/json/webScrape)',
+    label: '3. Generate Excel from webScrape JSON only (data/json/webScrape)',
     script: 'json_to_excel_webScrape.js',
     description: 'Creates an Excel file from only the JSON files in data/json/webScrape (web-scraped jobs).'
   },
   {
-    label: '3. Generate Excel from ALL JSON files (manual + webScrape)',
+    label: '4. Generate Excel from ALL JSON files (manual + webScrape + word)',
     script: 'json_to_excel_all.js',
-    description: 'Creates an Excel file from all JSON files in both data/json/manual and data/json/webScrape.'
+    description: 'Creates an Excel file from all JSON files in manual, webScrape, and word directories.'
   },
   {
-    label: '4. Generate Excel using legacy script (all sources)',
+    label: '5. Generate Excel using legacy script (all sources)',
     script: 'json_to_excel.js',
-    description: 'Runs the original script, combining pipeline, manual, and legacy JSON files.'
+    description: 'Runs the original script, combining pipeline, manual, word, and legacy JSON files.'
   },
   {
-    label: '5. Exit',
+    label: '6. Exit',
     script: null,
     description: 'Exit the menu.'
   }
@@ -53,7 +58,7 @@ const rl = readline.createInterface({
 
 function prompt() {
   printMenu();
-  rl.question('\nSelect an option (1-5): ', answer => {
+  rl.question('\nSelect an option (1-6): ', answer => {
     const idx = parseInt(answer.trim(), 10) - 1;
     if (idx >= 0 && idx < menuOptions.length) {
       const opt = menuOptions[idx];
