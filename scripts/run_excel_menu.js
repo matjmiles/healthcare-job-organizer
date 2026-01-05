@@ -18,14 +18,14 @@ const menuOptions = [
     description: 'Creates an Excel file from only the JSON files in data/json/webScrape (web-scraped jobs).'
   },
   {
-    label: '4. Generate Excel from ALL JSON files (manual + webScrape + word)',
+    label: '4. Generate Excel from ALL JSON files (combined processing)',
     script: 'json_to_excel_all.js',
     description: 'Creates an Excel file from all JSON files in manual, webScrape, and word directories.'
   },
   {
-    label: '5. Generate Excel using legacy script (all sources)',
+    label: '5. Generate Excel from ALL sources (pipeline + manual + word)',
     script: 'json_to_excel.js',
-    description: 'Runs the original script, combining pipeline, manual, word, and legacy JSON files.'
+    description: 'Runs the main script combining pipeline JSON, manual JSON, and word JSON files.'
   },
   {
     label: '6. Exit',
