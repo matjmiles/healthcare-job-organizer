@@ -10,6 +10,7 @@
     "json-to-excel-webscrape": "node scripts/json_to_excel_webScrape.js",
     "json-to-excel-manual": "node scripts/json_to_excel_manual.js",
     "json-to-excel-all": "node scripts/json_to_excel_all.js",
+    "analyze-jobs": "node scripts/analyze_jobs.js",
     "run-excel-menu": "node scripts/run_excel_menu.js",
     "start": "npm run html-to-json && npm run json-to-excel"
   },

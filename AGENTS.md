@@ -11,6 +11,7 @@ This file documents commands and tasks for opencode to remember across sessions.
 ### Manual Job Collection  
 - **Convert HTML to JSON**: `node scripts/html_to_json.js`
 - **Generate Excel**: `npm run json-to-excel`
+- **Analyze job market insights**: `npm run analyze-jobs`
 
 ### Testing & Quality Assurance
 - **Run all tests**: `cd hc_jobs_pipeline && python tests/run_tests.py`
@@ -36,8 +37,9 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 3. **Dual-Source Data Integration**:
    - Pipeline: 865 jobs analyzed → 18 highly filtered positions
-   - Manual: 103 human-curated jobs (preserved as-is)
-   - Combined Excel: 121 total positions
+   - Manual: 125 human-curated jobs (preserved as-is)
+   - Word Document: 59 positions (converted from .docx files)
+   - Combined Excel: 202 total positions
 
 4. **Professional Excel Output**:
    - Bullet-pointed qualifications with line breaks
@@ -50,7 +52,13 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Normalized hourly rates
    - Filters for erroneous values (<$10/hr)
 
-6. **Data Quality Assurance**:
+6. **Healthcare Administration Job Market Analysis**:
+   - Comprehensive analysis of 202 job postings for entry-level insights
+   - Identified top skills, certifications, and job categories for students
+   - Generated detailed report with recommendations for healthcare admin graduates
+   - Focus on customer service, communication, and technical skills development
+
+7. **Data Quality Assurance**:
    - Source tracking and metadata preservation
    - Duplicate detection and removal
    - Consistent formatting across all outputs
