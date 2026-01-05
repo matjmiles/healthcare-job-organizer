@@ -58,9 +58,10 @@ This file documents commands and tasks for opencode to remember across sessions.
 ## Current State (January 5, 2026)
 
 - **Pipeline Jobs**: ~18 (from ~865 analyzed with maximum restrictiveness filtering)
-- **Manual Jobs**: ~103 (human-curated collections)
-- **Final Excel Output**: ~121 jobs total (18 pipeline + 103 manual)
-- **Latest Excel File**: `output/jobs_consolidated_2026-01-05_17-30-59.xlsx`
+- **Manual Jobs**: ~125 (human-curated collections)
+- **Word Document Jobs**: ~59 (converted from .docx files)
+- **Final Excel Output**: ~202 jobs total (18 pipeline + 125 manual + 59 Word)
+- **Latest Excel File**: `output/jobs_consolidated_2026-01-05_22-49-22.xlsx`
 - **Filtering Rate**: 98% of scraped jobs excluded for quality control
 - **Test Coverage**: 100% pass rate for core filtering logic
 
@@ -81,13 +82,15 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 ### Processing Options
 - **Combined Processing** (`npm run json-to-excel`):
-  - Loads from both webScrape + manual directories
+  - Loads from webScrape + manual + word directories
   - Creates comprehensive Excel with all available jobs
 
 - **Separate Processing**:
   - `npm run json-to-excel-webscrape`: Pipeline jobs only
   - `npm run json-to-excel-manual`: Manual jobs only
-  - Allows focused analysis of different data sources
+  - `npm run word-to-json`: Convert Word documents to JSON
+
+- **Multi-Source Support**: Handles HTML, JSON, and Word document inputs
 
 ### Testing & Debugging (New Architecture)
 - **Test Organization**: `hc_jobs_pipeline/tests/` with unit/integration/debug separation

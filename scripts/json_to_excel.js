@@ -60,6 +60,26 @@ if (fs.existsSync(manualDir)) {
   });
 }
 
+// Load from word JSON files for additional data
+const wordDir = 'data/json/word';
+if (fs.existsSync(wordDir)) {
+  const wordFiles = fs.readdirSync(wordDir).filter(file => file.endsWith('.json'));
+  wordFiles.forEach(file => {
+    try {
+      const filePath = path.join(wordDir, file);
+      const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (Array.isArray(jobData)) {
+        jobs.push(...jobData);
+      } else {
+        jobs.push(jobData);
+      }
+      console.log(`Loaded word job data from ${file}`);
+    } catch (err) {
+      console.error(`Error reading ${file}:`, err.message);
+    }
+  });
+}
+
  // Prepare data for Excel
 const data = [
   ['Job Title', 'Company', 'City', 'State', 'Region', 'Job Description', 'Qualifications', 'Pay', 'Date', 'Remote Flag', 'Source Platform', 'Career Track', 'Entry Level Flag', 'Collected At', 'Source File']

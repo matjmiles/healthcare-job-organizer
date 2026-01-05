@@ -4,6 +4,7 @@
   "description": "Healthcare admin job data processing pipeline",
   "main": "scripts/json_to_excel.js",
   "scripts": {
+    "word-to-json": "node scripts/word_to_json.js",
     "html-to-json": "node scripts/html_to_json.js",
     "json-to-excel": "node scripts/json_to_excel.js",
     "json-to-excel-webscrape": "node scripts/json_to_excel_webScrape.js",
@@ -13,6 +14,7 @@
   },
   "dependencies": {
     "cheerio": "^1.1.2",
+    "mammoth": "^1.11.0",
     "xlsx": "^0.18.5",
     "xlsx-populate": "^1.21.0"
   }
