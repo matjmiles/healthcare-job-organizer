@@ -6,6 +6,9 @@
   "scripts": {
     "html-to-json": "node scripts/html_to_json.js",
     "json-to-excel": "node scripts/json_to_excel.js",
+    "json-to-excel-webscrape": "node scripts/json_to_excel_webScrape.js",
+    "json-to-excel-manual": "node scripts/json_to_excel_manual.js",
+    "json-to-excel-all": "node scripts/json_to_excel_all.js",
     "start": "npm run html-to-json && npm run json-to-excel"
   },
   "dependencies": {

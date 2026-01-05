@@ -20,29 +20,45 @@ if (fs.existsSync(pipelineFile)) {
   }
 }
 
-// Load from legacy JSON files for additional data
-const jsonDir = 'data/json';
-if (fs.existsSync(jsonDir)) {
-  const jsonFiles = fs.readdirSync(jsonDir).filter(file => 
-    file.endsWith('.json') && 
-    !file.includes('healthcare_admin_jobs_west_100plus.json') // Skip old file to avoid duplicates
-  );
-
-  jsonFiles.forEach(file => {
+// Load from webScrape JSON files (pipeline-generated)
+const webScrapeDir = 'data/json/webScrape';
+if (fs.existsSync(webScrapeDir)) {
+  const webScrapeFiles = fs.readdirSync(webScrapeDir).filter(file => file.endsWith('.json'));
+  webScrapeFiles.forEach(file => {
     try {
-      const filePath = path.join(jsonDir, file);
+      const filePath = path.join(webScrapeDir, file);
       const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
       if (Array.isArray(jobData)) {
         jobs.push(...jobData);
       } else {
         jobs.push(jobData);
       }
-      console.log(`Loaded additional job data from ${file}`);
+      console.log(`Loaded pipeline job data from ${file}`);
     } catch (err) {
       console.error(`Error reading ${file}:`, err.message);
     }
-   });
- }
+  });
+}
+
+// Load from manual JSON files for additional data
+const manualDir = 'data/json/manual';
+if (fs.existsSync(manualDir)) {
+  const manualFiles = fs.readdirSync(manualDir).filter(file => file.endsWith('.json'));
+  manualFiles.forEach(file => {
+    try {
+      const filePath = path.join(manualDir, file);
+      const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (Array.isArray(jobData)) {
+        jobs.push(...jobData);
+      } else {
+        jobs.push(jobData);
+      }
+      console.log(`Loaded manual job data from ${file}`);
+    } catch (err) {
+      console.error(`Error reading ${file}:`, err.message);
+    }
+  });
+}
 
  // Prepare data for Excel
 const data = [

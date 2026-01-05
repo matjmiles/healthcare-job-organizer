@@ -81,27 +81,23 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
 ## Project Structure
 
 - `hc_jobs_pipeline/`: Main pipeline directory
-  - `run_collect.py`: Main scraper script
+  - `run_collect.py`: Main scraper script with integrated filtering
   - `update_pay_from_urls.py`: Script to enhance pay extraction by fetching full job pages
-  - `run_summary.py`: Generate statistical reports from job data
   - `enhanced_qualifications.py`: Qualifications extraction logic
-  - `education_filters.py`: Education requirement filtering
-  - `relaxed_education_filters.py`: Alternative filtering logic
+  - `education_filters.py`: Comprehensive education requirement filtering
   - `employers.json`: List of employers to scrape
-  - `requirements.txt`: Python dependencies
-  - `output/`: Generated JSON files
-- `data/`: Manual job collection
-  - `html/`: Indeed job postings in HTML format
-  - `json/`: Converted JSON files from HTML processing
+  - `tests/`: Comprehensive test suite with unit/integration/debug tests
+- `data/json/`: Organized JSON file storage
+  - `webScrape/`: Pipeline-generated jobs (filtered through bachelor's degree criteria)
+  - `manual/`: Manually curated jobs (pre-filtered by humans)
 - `scripts/`: Processing scripts
-  - `html_to_json.js`: Convert HTML files to JSON (no education filtering)
-  - `json_to_excel.js`: Node.js script to convert JSON to formatted Excel
-  - `education_filter_js.js`: Education filtering logic for HTML processing
-- `archive/`: Legacy code and reference files
-  - `legacy_scripts/`: Archived scripts with potential future value
-- `reports/`: Generated summary reports
-- `output/`: Final Excel files with combined and filtered data
-- `package.json`: Node.js dependencies
+  - `json_to_excel.js`: Combined Excel generation (webScrape + manual)
+  - `json_to_excel_webScrape.js`: Excel from webScrape jobs only
+  - `json_to_excel_manual.js`: Excel from manual jobs only
+  - `json_to_excel_all.js`: Alternative combined processing
+  - `html_to_json.js`: Convert HTML files to JSON
+- `output/`: Final Excel files with professional formatting
+- `package.json`: Node.js dependencies and scripts
 
 ## Key Accomplishments
 
@@ -150,10 +146,21 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
 - Loaded as-is during Excel generation (no additional filtering)
 
 ### Excel Generation
-1. Generate final Excel: `npm run json-to-excel`
-   - Combines pipeline data (~18 jobs) + manual data (~103 jobs)
-   - Total: ~121 jobs in professionally formatted Excel
-   - Includes hyperlinks, bullet points, and proper styling
+Choose from multiple processing options:
+
+1. **Combined Excel** (`npm run json-to-excel`):
+   - Combines webScrape data (~18 filtered jobs) + manual data (~125 curated jobs)
+   - Total: ~143 jobs with professional formatting
+
+2. **Pipeline Only** (`npm run json-to-excel-webscrape`):
+   - Processes only webScrape directory jobs
+   - Shows results from automated filtering pipeline
+
+3. **Manual Only** (`npm run json-to-excel-manual`):
+   - Processes only manually curated jobs
+   - Shows human-selected positions without additional filtering
+
+All options include hyperlinks, bullet-pointed qualifications, and professional styling.
 
 ## Dependencies
 

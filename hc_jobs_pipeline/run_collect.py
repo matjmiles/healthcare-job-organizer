@@ -548,8 +548,8 @@ def looks_like_health_admin(title: str, text: str) -> Tuple[bool, str]:
 async def collect() -> None:
     root = Path(__file__).resolve().parent
     employers_path = root / "employers.json"
-    out_dir = root / "output"
-    out_dir.mkdir(exist_ok=True)
+    out_dir = root / "data" / "json" / "webScrape"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     employers = json.loads(employers_path.read_text(encoding="utf-8"))
     
