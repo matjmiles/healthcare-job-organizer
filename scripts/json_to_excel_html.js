@@ -145,7 +145,7 @@ jobs.forEach(job => {
   const timestamp = now.toISOString().replace(/:/g, '-').replace(/\..+/, '').replace('T', '_');
   const outputDir = require('path').resolve(__dirname, '../output');
   if (!require('fs').existsSync(outputDir)) require('fs').mkdirSync(outputDir, { recursive: true });
-  const filename = require('path').join(outputDir, `jobs_manual_only_${timestamp}.xlsx`);
+  const filename = require('path').join(outputDir, `jobs_html_only_${timestamp}.xlsx`);
   await workbook.toFileAsync(filename);
   console.log(`Excel file created: ${filename} with ${jobs.length} job entries`);
 })();

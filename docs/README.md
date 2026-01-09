@@ -50,7 +50,7 @@ An intelligent healthcare job collection and filtering system that automatically
   - `html_to_json.js`: Processes HTML files with bachelor's degree filtering and URL extraction
   - `json_to_excel.js`: Generates comprehensive Excel files with 14 metadata columns and integrated bachelor's degree filtering
   - `education_filter_js.js`: Advanced education requirement analysis (JavaScript implementation)
-  - `extract_job.js`: Manual browser console extraction for single jobs
+  - `extract_job.js`: Browser console extraction for single jobs
 - `hc_jobs_pipeline/`: Python-based automated job collection pipeline
   - `run_collect.py`: Main collection script with comprehensive filtering and enhanced pay extraction
   - `education_filters.py`: Sophisticated bachelor's degree requirement analysis
@@ -58,8 +58,11 @@ An intelligent healthcare job collection and filtering system that automatically
   - `update_pay.py`: Retroactive pay extraction tool for existing job data
   - `update_pay_from_urls.py`: Advanced URL-based pay scraping for comprehensive coverage
 - `data/`: Structured data storage
-  - `html/`: Saved Indeed job pages for manual processing
+  - `html/`: HTML job posting files for extraction
   - `json/`: Individual job files and consolidated datasets
+    - `webScrape/`: Pipeline-generated jobs
+    - `html/`: Jobs extracted from HTML files
+    - `word/`: Jobs converted from Word documents
 - `output/`: Generated Excel files with timestamp-based naming
 - `package.json`: Dependencies for HTML parsing, Excel generation (XLSX + xlsx-populate), and data processing
 
@@ -177,12 +180,12 @@ Generated files include: Job Title, Company, Location, Job Description, Qualific
 - **Filter Transparency**: Console output shows original vs filtered job counts for quality assurance
 - **Dual Library Architecture**: Uses xlsx-populate for advanced styling with XLSX fallback for testing
 - **Comprehensive Testing**: Built-in verification displays sample qualifications, hyperlinks, and date formatting with expanded 10-job testing sample
-### Manual Extraction (Single Job)
+### Single Job Extraction (Browser Console)
 
 1. Open job URL in browser.
 2. Paste `scripts/extract_job.js` into console and run.
-3. Copy the JSON output to `data/jobs_data.json`.
-4. Run `npm run excel` to create the Excel file.
+3. Copy the JSON output to `data/json/html/`.
+4. Run `npm run json-to-excel` to create the Excel file.
 
 ### Automated Job Collection from ATS APIs
 

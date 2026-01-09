@@ -1,16 +1,16 @@
 # Mat Dixon Health Admin Jobs - Project Structure
 
 ## Overview
-Intelligent healthcare job collection system with automated bachelor's degree filtering, pay normalization, and comprehensive data processing. Processes jobs from both automated ATS APIs and manual HTML sources with unified schema and advanced education requirements analysis.
+Intelligent healthcare job collection system with automated bachelor's degree filtering, pay normalization, and comprehensive data processing. Processes jobs from automated ATS APIs, HTML files, and Word documents with unified schema and advanced education requirements analysis.
 
 ## Directory Structure
 
 ```
 project-root/
 ├── data/
-│   ├── html/                 # HTML job posting files (manual collection)
-│   │   ├── *.html            # Indeed job pages saved as "Webpage, Complete"
-│   │   └── [7 filtered out, 2 bachelor's-level included]
+│   ├── html/                 # HTML job posting files for extraction
+│   │   ├── *.html            # Job posting pages saved as HTML
+│   │   └── [103 files processed with 100% extraction success]
 │   ├── json/                 # Processed JSON files (unified schema)
 │   │   ├── 1_*.json - 9_*.json  # Individual jobs from HTML processing
 │   │   ├── healthcare_admin_jobs_west_100plus.json  # ATS pipeline output
@@ -145,9 +145,9 @@ project-root/
 ### Legacy/Utility Scripts
 
 #### `extract_job.js`
-- **Usage**: Browser console script for manual single-job extraction
+- **Usage**: Browser console script for single-job extraction
 - **Method**: Copy-paste into browser console on job posting pages
-- **Output**: JSON data for manual addition to dataset
+- **Output**: JSON data for addition to dataset
 
 #### `parse_html.js` (Legacy)
 - **Purpose**: HTML parsing utilities and selectors

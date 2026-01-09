@@ -8,7 +8,7 @@
     "html-to-json": "node scripts/html_to_json.js",
     "json-to-excel": "node scripts/json_to_excel.js",
     "json-to-excel-webscrape": "node scripts/json_to_excel_webScrape.js",
-    "json-to-excel-manual": "node scripts/json_to_excel_manual.js",
+    "json-to-excel-html": "node scripts/json_to_excel_html.js",
     "json-to-excel-all": "node scripts/json_to_excel_all.js",
     "analyze-jobs": "node scripts/analyze_jobs.js",
     "run-excel-menu": "node scripts/run_excel_menu.js",

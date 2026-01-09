@@ -8,11 +8,11 @@ This file documents commands and tasks for opencode to remember across sessions.
 - **Run job scraper**: `cd hc_jobs_pipeline && python run_collect.py`
 - **Enhance pay extraction**: `cd hc_jobs_pipeline && python update_pay_from_urls.py`
 
-### Manual Job Collection  
+### HTML Job Collection  
 - **Convert HTML to JSON**: `node scripts/html_to_json.js`
 - **Convert Word documents to JSON**: `node scripts/word_to_json.js`
 - **Generate Excel (all sources)**: `npm run json-to-excel`
-- **Generate Excel (word only)**: `node scripts/json_to_excel_word.js`
+- **Generate Excel (HTML only)**: `node scripts/json_to_excel_html.js`
 - **Interactive Excel menu**: `node scripts/run_excel_menu.js`
 - **Analyze job market insights**: `npm run analyze-jobs`
 
@@ -38,11 +38,11 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Interactive debugging tools included
    - VS Code debugging configurations
 
-3. **Dual-Source Data Integration**:
-   - Pipeline: 865 jobs analyzed → 18 highly filtered positions
-   - Manual: 125 human-curated jobs (preserved as-is)
+3. **Tri-Source Data Integration**:
+   - Pipeline (webScrape): 865 jobs analyzed → 18 highly filtered positions
+   - HTML: 103 jobs extracted from HTML files (100% success rate)
    - Word Document: 59 positions (converted from .docx files)
-   - Combined Excel: 202 total positions
+   - Combined Excel: ~180 total positions
 
 4. **Professional Excel Output**:
    - Bullet-pointed qualifications with line breaks
@@ -134,7 +134,7 @@ This file documents commands and tasks for opencode to remember across sessions.
   - EXCLUDES: Jobs without bachelor's degree mentions
   - EXCLUDES: 3+ years experience and advanced degree requirements
   - EXCLUDES: Senior/executive positions
-- **Manual Jobs**: Human-filtered (no additional processing)
+- **HTML Jobs**: Human-selected files, extracted with multi-strategy parser
 - **Excel Generation**: Reads from organized directory structure
 
 ## Notes for Future Sessions

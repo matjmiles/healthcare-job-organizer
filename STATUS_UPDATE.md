@@ -1,16 +1,24 @@
-# Project Status Update - December 29, 2025
+# Project Status Update - January 10, 2026
 
 ## Recent Accomplishments
 
-### Multi-Source Job Collection System
-- **Automated Pipeline**: Successfully maintaining collection from Lever/Greenhouse APIs (414 jobs)
-- **Manual Collection**: Added Indeed job scraping capability with HTML processing (24 jobs)
-- **Combined Processing**: Integrated workflow handling both automated and manual data sources
+### Tri-Source Job Collection System
+- **Automated Pipeline (webScrape)**: Collection from Lever/Greenhouse APIs with strict bachelor's filtering (~18 jobs)
+- **HTML Extraction**: Multi-strategy extraction from HTML files with 100% success rate (103 jobs)
+- **Word Documents**: Table-based parsing from .docx files (59 jobs)
 
-### Flexible Filtering Approach
-- **Pipeline Data**: Education filtering maintained for bachelor's degree requirements
-- **Manual Data**: No filtering applied to hand-selected Indeed positions
-- **Excel Output**: Combined approach yielding 56 professionally relevant positions
+### Directory Naming Standardization
+- Renamed `data/json/manual/` to `data/json/html/` for clarity
+- Updated all scripts to use consistent `html` naming convention
+- Scripts renamed: `json_to_excel_manual.js` → `json_to_excel_html.js`
+- Output files renamed: `jobs_manual_only_*.xlsx` → `jobs_html_only_*.xlsx`
+
+### HTML Extraction Overhaul (January 2026)
+- Multi-strategy extraction: table-based, container-styled, indeed-meta, section-based
+- Encoding cleanup: removes Â artifacts, â€™ smart quotes, Unicode issues
+- Company name normalization for consistent employer identification
+- Pay normalization: converts annual salaries to hourly (÷ 2080 hrs/year)
+- 100% extraction success rate (up from 78%)
 
 ### Enhanced Data Processing
 - **Pay Extraction**: Advanced compensation parsing with HTML scraping fallbacks
@@ -18,14 +26,15 @@
 - **Quality Controls**: Low pay filtering, duplicate detection, and source tracking
 
 ## Current Dataset Metrics
-- **Total Jobs Collected**: 438 (414 + 24)
-- **Final Filtered Output**: 56 jobs in latest Excel file
+- **Pipeline Jobs (webScrape)**: ~18 (from ~865 analyzed with 98% filter rate)
+- **HTML Jobs**: ~103 (100% extraction success)
+- **Word Document Jobs**: ~59
+- **Combined Total**: ~180 jobs
 - **Geographic Coverage**: Nationwide with regional distribution
-- **Data Sources**: Automated APIs + Manual Indeed scraping
 
 ## Technical Infrastructure
-- **Python Pipeline**: Robust scraping and processing scripts
-- **Node.js Processing**: HTML-to-JSON conversion and Excel generation
+- **Python Pipeline**: Robust scraping with maximum restrictiveness filtering
+- **Node.js Processing**: Multi-strategy HTML extraction and Excel generation
 - **Advanced Excel**: xlsx-populate library for professional formatting
 - **Version Control**: Git tracking with comprehensive documentation
 
@@ -37,5 +46,6 @@
 - [ ] Create web dashboard for job browsing
 
 ---
-*Generated: December 29, 2025*
-*Latest Excel: jobs_consolidated_2025-12-29_16-56-31.xlsx*
+*Updated: January 10, 2026*
+*Latest HTML-Only Excel: jobs_html_only_*.xlsx*
+*Latest Word-Only Excel: jobs_word_only_*.xlsx*

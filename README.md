@@ -5,14 +5,14 @@ This project scrapes healthcare administration job listings from platforms like 
 ## Features
 
 - **Multi-Source Job Processing**:
-  - Automated pipeline: 865 jobs analyzed → 18 filtered (98% exclusion rate)
-  - Manual collections: 125 human-curated jobs (no additional filtering)
+  - Automated pipeline (webScrape): 865 jobs analyzed → 18 filtered (98% exclusion rate)
+  - HTML extraction: 103 jobs from HTML files (100% extraction success)
   - Word documents: 59 converted to JSON format
-  - Combined dataset: 202 total jobs from all sources
+  - Combined dataset: ~180 total jobs from all sources
 - **Maximum Restrictiveness Filtering**:
   - Pipeline data: REQUIRES bachelor's degree mention + entry-level criteria
-  - Manual/Word selections: Preserved as-is (human-filtered)
-  - Final Excel: 202 total jobs with professional formatting
+  - HTML/Word selections: Human-selected files, extracted as-is
+  - Final Excel: ~180 total jobs with professional formatting
 - **Pay Extraction**: Attempts to extract compensation from job descriptions and full HTML pages, normalized to hourly rates
 - **Excel Formatting**:
   - Qualifications formatted with bullet points and line breaks
@@ -89,16 +89,16 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
   - `employers.json`: List of employers to scrape
   - `tests/`: Comprehensive test suite with unit/integration/debug tests
 - `data/`: Source data storage
-  - `html/`: Raw HTML job postings from manual collection
+  - `html/`: Raw HTML job postings for extraction
   - `word/`: Raw Word document (.docx) job postings
   - `json/`: Processed JSON files by source type
     - `webScrape/`: Pipeline-generated jobs (filtered through bachelor's degree criteria)
-    - `manual/`: Manually curated jobs (pre-filtered by humans)
+    - `html/`: Jobs extracted from HTML files
     - `word/`: Jobs converted from Word documents
 - `scripts/`: Processing scripts
   - `json_to_excel.js`: Combined Excel generation (all sources)
   - `json_to_excel_webScrape.js`: Excel from webScrape jobs only
-  - `json_to_excel_manual.js`: Excel from manual jobs only
+  - `json_to_excel_html.js`: Excel from HTML jobs only
   - `word_to_json.js`: Convert Word documents to JSON format
   - `html_to_json.js`: Convert HTML files to JSON
 - `output/`: Final Excel files with professional formatting
@@ -111,9 +111,10 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
    - REQUIRES bachelor's degree mention in job postings
    - Excludes 3+ years experience and advanced degree requirements
    - Excludes senior/executive positions
-2. **Dual-Source Integration**:
-   - Automated pipeline: 865 jobs analyzed → 18 highly filtered positions
-   - Manual collections: 103 human-curated jobs preserved as-is
+2. **Tri-Source Integration**:
+   - Automated pipeline (webScrape): 865 jobs analyzed → 18 highly filtered positions
+   - HTML extraction: 103 jobs with 100% extraction success rate
+   - Word documents: 59 jobs converted from .docx files
    - Combined processing for comprehensive coverage
 3. **Advanced Pay Data Enhancement**:
    - Pay extraction from job descriptions and full HTML pages
@@ -151,25 +152,26 @@ Use F5 to start debugging, set breakpoints, and step through code execution.
    - Extracts job titles, descriptions, qualifications, and company info
    - Outputs to `data/json/word/` directory
 
-### Manual Job Collection
-- Manual collections are pre-filtered by humans
-- Stored in `data/json/` directory
-- Loaded as-is during Excel generation (no additional filtering)
+### HTML Job Collection
+- HTML files are placed in `data/html/` directory
+- Convert to JSON: `node scripts/html_to_json.js`
+- Outputs to `data/json/html/` directory
+- 100% extraction success rate with multi-strategy parsing
 
 ### Excel Generation
 Choose from multiple processing options:
 
 1. **Combined Excel** (`npm run json-to-excel`):
-   - Combines all sources: webScrape (~18), manual (~125), Word (~59)
-   - Total: ~202 jobs with professional formatting
+   - Combines all sources: webScrape (~18), html (~103), Word (~59)
+   - Total: ~180 jobs with professional formatting
 
 2. **Pipeline Only** (`npm run json-to-excel-webscrape`):
    - Processes only webScrape directory jobs
    - Shows results from automated filtering pipeline
 
-3. **Manual Only** (`npm run json-to-excel-manual`):
-   - Processes only manually curated jobs
-   - Shows human-selected positions without additional filtering
+3. **HTML Only** (`npm run json-to-excel-html`):
+   - Processes only HTML-extracted jobs
+   - Shows positions extracted from HTML job postings
 
 All options include hyperlinks, bullet-pointed qualifications, and professional styling.
 
