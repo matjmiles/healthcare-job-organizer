@@ -8,9 +8,9 @@ const menuOptions = [
     description: 'Converts Word document files (.docx) in data/word/ to JSON format in data/json/word/.'
   },
   {
-    label: '2. Generate Excel from manual JSON only (data/json/manual)',
-    script: 'json_to_excel_manual.js',
-    description: 'Creates an Excel file from only the JSON files in data/json/manual (manual/HTML jobs).'
+    label: '2. Generate Excel from HTML JSON only (data/json/html)',
+    script: 'json_to_excel_html.js',
+    description: 'Creates an Excel file from only the JSON files in data/json/html (HTML-extracted jobs).'
   },
   {
     label: '3. Generate Excel from webScrape JSON only (data/json/webScrape)',

@@ -147,6 +147,96 @@ function inferEntryLevelFlag(title, description) {
   return false;
 }
 
+/**
+ * Clean up Unicode encoding artifacts from text
+ * Handles: Â (non-breaking space artifact), â€™ (smart quote), etc.
+ */
+function cleanEncodingArtifacts(text) {
+  if (!text) return text;
+  return text
+    .replace(/Â\s*/g, ' ')           // Remove Â artifacts
+    .replace(/â€™/g, "'")            // Smart single quote
+    .replace(/â€œ/g, '"')            // Smart double quote open
+    .replace(/â€/g, '"')             // Smart double quote close
+    .replace(/â€"/g, '—')            // Em dash
+    .replace(/â€"/g, '–')            // En dash
+    .replace(/â€¦/g, '...')          // Ellipsis
+    .replace(/[\u2018\u2019]/g, "'") // Unicode smart single quotes
+    .replace(/[\u201C\u201D]/g, '"') // Unicode smart double quotes
+    .replace(/\u2013/g, '–')         // Unicode en dash
+    .replace(/\u2014/g, '—')         // Unicode em dash
+    .replace(/\u2026/g, '...')       // Unicode ellipsis
+    .replace(/\s+/g, ' ')            // Collapse multiple spaces
+    .trim();
+}
+
+/**
+ * Normalize company names to consistent format
+ */
+function normalizeCompanyName(company) {
+  if (!company || company === 'N/A') return company;
+  const companyMappings = {
+    'HCA': 'HCA Healthcare',
+    'Intermountain Health': 'Intermountain Health',
+    'Intermountain': 'Intermountain Health',
+    'IHC': 'Intermountain Health',
+    "St. Luke's": "St. Luke's Health System",
+    'St Lukes': "St. Luke's Health System",
+    'University of Utah': 'University of Utah Health',
+    'UofU': 'University of Utah Health'
+  };
+  for (const [pattern, normalized] of Object.entries(companyMappings)) {
+    if (company.toLowerCase().includes(pattern.toLowerCase())) {
+      return normalized;
+    }
+  }
+  return company;
+}
+
+/**
+ * Extract pay amount and normalize to hourly rate
+ */
+function extractAndNormalizePay(payText) {
+  if (!payText || payText === 'N/A') return 'N/A';
+  
+  const HOURS_PER_YEAR = 2080;
+  
+  // Clean up the text first
+  payText = cleanEncodingArtifacts(payText);
+  
+  // Extract dollar amounts
+  const dollarMatches = payText.match(/\$[\d,]+(?:\.\d+)?/g);
+  if (!dollarMatches || dollarMatches.length === 0) return payText;
+  
+  // Parse amounts
+  const amounts = dollarMatches.map(m => parseFloat(m.replace(/[$,]/g, '')));
+  
+  // Determine if annual or hourly (threshold: >$500 is annual)
+  const isAnnual = amounts.some(a => a > 500) || /per\s*year|annual|salary/i.test(payText);
+  const isExplicitHourly = /per\s*hour|hourly|\/hr/i.test(payText);
+  
+  if (isExplicitHourly || (!isAnnual && amounts.every(a => a < 500))) {
+    // Already hourly
+    if (amounts.length === 2) {
+      return `$${amounts[0].toFixed(2)} - $${amounts[1].toFixed(2)}/hr`;
+    } else if (amounts.length === 1) {
+      return `$${amounts[0].toFixed(2)}/hr`;
+    }
+    return payText;
+  }
+  
+  // Convert annual to hourly
+  const hourlyAmounts = amounts.map(a => a / HOURS_PER_YEAR);
+  
+  if (hourlyAmounts.length === 2) {
+    return `$${hourlyAmounts[0].toFixed(2)} - $${hourlyAmounts[1].toFixed(2)}/hr`;
+  } else if (hourlyAmounts.length === 1) {
+    return `$${hourlyAmounts[0].toFixed(2)}/hr`;
+  }
+  
+  return payText;
+}
+
 function extractFromHTML(htmlContent) {
   const $ = cheerio.load(htmlContent);
   const result = {};
@@ -191,11 +281,13 @@ function extractFromHTML(htmlContent) {
               pay: findHeaderIdx(['pay', 'compensation', 'salary', 'wage']),
               date: findHeaderIdx(['date', 'date posted', 'posting date'])
             };
-            result.company = cells.eq(colMap.company).text().trim() || 'N/A';
-            result.jobTitle = cells.eq(colMap.jobTitle).text().trim() || 'N/A';
-            result.jobDescription = cells.eq(colMap.jobDescription).text().trim() || 'N/A';
-            result.qualifications = cells.eq(colMap.qualifications).text().trim() || 'N/A';
-            result.pay = cells.eq(colMap.pay).text().trim() || 'N/A';
+            
+            // Extract and clean all fields
+            result.company = normalizeCompanyName(cleanEncodingArtifacts(cells.eq(colMap.company).text().trim())) || 'N/A';
+            result.jobTitle = cleanEncodingArtifacts(cells.eq(colMap.jobTitle).text().trim()) || 'N/A';
+            result.jobDescription = cleanEncodingArtifacts(cells.eq(colMap.jobDescription).text().trim()) || 'N/A';
+            result.qualifications = cleanEncodingArtifacts(cells.eq(colMap.qualifications).text().trim()) || 'N/A';
+            result.pay = extractAndNormalizePay(cells.eq(colMap.pay).text().trim()) || 'N/A';
             result.date = cells.eq(colMap.date).text().trim() || null;
             result.location = 'N/A';
             const extractedState = inferState(result.location, result.company, result.jobTitle);
@@ -214,6 +306,239 @@ function extractFromHTML(htmlContent) {
         }
       });
       if (foundTableJob) {
+        return result;
+      }
+    }
+    
+    // --- Container/Styled HTML Extraction (BCBS Kansas, WellSky style) ---
+    const hasContainer = $('.container').length > 0 || $('.company-info').length > 0;
+    if (hasContainer) {
+      // Job Title - from h1 or title
+      let jobTitle = $('h1').first().text().trim();
+      if (!jobTitle) jobTitle = $('title').text().trim().split(' - ')[0];
+      result.jobTitle = cleanEncodingArtifacts(jobTitle) || 'N/A';
+      
+      // Company - from .company-info h3 or strong with Company:
+      let company = '';
+      const companyInfoH3 = $('.company-info h3').first().text().trim();
+      if (companyInfoH3) {
+        company = companyInfoH3;
+      } else {
+        // Try Company: pattern in any element
+        $('p, div, strong').each((i, el) => {
+          const text = $(el).text();
+          const match = text.match(/Company:\s*([^\n<]+)/i);
+          if (match && !company) {
+            company = match[1].trim();
+          }
+        });
+      }
+      // Extract company from title if still not found (e.g., "Job Title - Company Name")
+      if (!company) {
+        const titleParts = $('title').text().split(' - ');
+        if (titleParts.length > 1) {
+          company = titleParts[titleParts.length - 1].trim();
+        }
+      }
+      result.company = normalizeCompanyName(cleanEncodingArtifacts(company)) || 'N/A';
+      
+      // Location - from .company-info or Location: pattern
+      let location = '';
+      $('p, div').each((i, el) => {
+        const text = $(el).text();
+        const match = text.match(/Location:\s*([^\n<]+)/i);
+        if (match && !location) {
+          location = match[1].trim();
+        }
+      });
+      result.location = cleanEncodingArtifacts(location) || 'N/A';
+      
+      // Pay - from .salary class or Salary Range pattern
+      let pay = '';
+      const salaryEl = $('.salary, .detail-item.salary').first().text();
+      if (salaryEl) {
+        const payMatch = salaryEl.match(/\$[\d,]+(?:\.\d+)?(?:\s*[-–]\s*\$[\d,]+(?:\.\d+)?)?/);
+        if (payMatch) pay = payMatch[0];
+      }
+      if (!pay) {
+        // Look for salary patterns in body text
+        const bodyText = $.text();
+        const payPatterns = [
+          /Salary(?:\s*Range)?:\s*(\$[\d,]+(?:\.\d+)?(?:\s*[-–]\s*\$[\d,]+(?:\.\d+)?)?(?:\s*(?:annually|per\s*year|\/yr))?)/i,
+          /(\$[\d,]+(?:\.\d+)?(?:\s*[-–]\s*\$[\d,]+(?:\.\d+)?)?)\s*(?:annually|per\s*year|per\s*hour)/i
+        ];
+        for (const pattern of payPatterns) {
+          const match = bodyText.match(pattern);
+          if (match) {
+            pay = match[1] || match[0];
+            break;
+          }
+        }
+      }
+      result.pay = extractAndNormalizePay(pay) || 'N/A';
+      
+      // Job Description - combine Position Overview + Key Responsibilities
+      let description = '';
+      const descSections = ['position overview', 'job description', 'about the role', 'overview', 'summary'];
+      const respSections = ['key responsibilities', 'responsibilities', 'essential functions', 'duties'];
+      
+      // Look for description sections by h2/h3 headers
+      $('h2, h3').each((i, el) => {
+        const headerText = $(el).text().toLowerCase().trim();
+        if (descSections.some(s => headerText.includes(s))) {
+          // Get following content (p or ul)
+          let next = $(el).next();
+          while (next.length && !next.is('h2, h3')) {
+            if (next.is('p')) {
+              description += next.text().trim() + ' ';
+            } else if (next.is('ul')) {
+              next.find('li').each((j, li) => {
+                description += '• ' + $(li).text().trim() + ' ';
+              });
+            }
+            next = next.next();
+          }
+        }
+      });
+      
+      // Add responsibilities
+      $('h2, h3').each((i, el) => {
+        const headerText = $(el).text().toLowerCase().trim();
+        if (respSections.some(s => headerText.includes(s))) {
+          let next = $(el).next();
+          while (next.length && !next.is('h2, h3')) {
+            if (next.is('ul')) {
+              next.find('li').each((j, li) => {
+                description += '• ' + $(li).text().trim() + ' ';
+              });
+            } else if (next.is('p')) {
+              description += next.text().trim() + ' ';
+            }
+            next = next.next();
+          }
+        }
+      });
+      
+      result.jobDescription = cleanEncodingArtifacts(description) || 'N/A';
+      
+      // Qualifications - combine Education & Experience + Required Skills sections
+      let qualifications = [];
+      const qualSections = ['education', 'experience', 'requirements', 'qualifications', 'required skills', 'minimum qualifications'];
+      
+      $('h2, h3').each((i, el) => {
+        const headerText = $(el).text().toLowerCase().trim();
+        if (qualSections.some(s => headerText.includes(s))) {
+          let next = $(el).next();
+          while (next.length && !next.is('h2, h3')) {
+            if (next.is('ul')) {
+              next.find('li').each((j, li) => {
+                qualifications.push($(li).text().trim());
+              });
+            } else if (next.is('p')) {
+              const text = next.text().trim();
+              if (text.length > 10) qualifications.push(text);
+            }
+            next = next.next();
+          }
+        }
+      });
+      
+      result.qualifications = cleanEncodingArtifacts(qualifications.join('; ')) || 'N/A';
+      
+      // State, region, city
+      const extractedState = inferState(result.location, result.company, result.jobTitle);
+      result.state = extractedState;
+      result.region = getStateRegion(extractedState);
+      result.city = 'N/A';
+      if (result.location && result.location !== 'N/A') {
+        const cityMatch = result.location.match(/^([^,]+)/);
+        if (cityMatch) result.city = cityMatch[1].trim();
+      }
+      
+      result.remoteFlag = inferRemoteFlag(result.location) || /remote|hybrid|work from home/i.test($.text());
+      result.sourcePlatform = 'html-styled';
+      result.careerTrack = inferCareerTrack(result.jobDescription + ' ' + result.qualifications);
+      result.entryLevelFlag = inferEntryLevelFlag(result.jobTitle, result.jobDescription + ' ' + result.qualifications);
+      result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      result._extractionStrategy = 'container-styled';
+      
+      // Only return if we got meaningful data
+      if (result.jobTitle !== 'N/A' && (result.company !== 'N/A' || result.jobDescription !== 'N/A')) {
+        return result;
+      }
+    }
+    
+    // --- Indeed Raw HTML Extraction ---
+    const isIndeed = htmlContent.includes('indeed.com') || $('meta[id="indeed-share-message"]').length > 0;
+    if (isIndeed) {
+      // Extract from meta tags first
+      const indeedTitle = $('meta[id="indeed-share-message"]').attr('content');
+      const ogTitle = $('meta[property="og:title"]').attr('content');
+      const ogDescription = $('meta[property="og:description"]').attr('content');
+      
+      // Job title from indeed-share-message or og:title
+      let jobTitle = indeedTitle || (ogTitle ? ogTitle.split(' - ')[0].trim() : '');
+      result.jobTitle = cleanEncodingArtifacts(jobTitle) || 'N/A';
+      
+      // Company from og:description (Indeed puts company name there)
+      result.company = normalizeCompanyName(cleanEncodingArtifacts(ogDescription)) || 'N/A';
+      
+      // Location from og:title (format: "Job Title - Location - Indeed.com")
+      let location = '';
+      if (ogTitle) {
+        const parts = ogTitle.split(' - ');
+        if (parts.length >= 2) {
+          location = parts[1].replace('Indeed.com', '').trim();
+        }
+      }
+      result.location = cleanEncodingArtifacts(location) || 'N/A';
+      
+      // Try to extract from JSON-LD
+      const jsonLdScript = $('script[type="application/ld+json"]').text();
+      if (jsonLdScript) {
+        try {
+          const ldData = JSON.parse(jsonLdScript);
+          if (ldData.title) result.jobTitle = ldData.title;
+          if (ldData.hiringOrganization?.name) result.company = ldData.hiringOrganization.name;
+          if (ldData.jobLocation?.address) {
+            const addr = ldData.jobLocation.address;
+            result.location = [addr.addressLocality, addr.addressRegion].filter(Boolean).join(', ');
+            result.city = addr.addressLocality || 'N/A';
+            result.state = addr.addressRegion || null;
+          }
+          if (ldData.baseSalary) {
+            const salary = ldData.baseSalary;
+            if (salary.value) {
+              result.pay = extractAndNormalizePay(`$${salary.value.minValue || salary.value} - $${salary.value.maxValue || salary.value}`);
+            }
+          }
+          if (ldData.description) result.jobDescription = cleanEncodingArtifacts(ldData.description);
+          if (ldData.datePosted) result.date = ldData.datePosted;
+        } catch (e) {
+          // JSON-LD parsing failed, continue with other methods
+        }
+      }
+      
+      // State, region
+      const extractedState = result.state || inferState(result.location, result.company, result.jobTitle);
+      result.state = extractedState;
+      result.region = getStateRegion(extractedState);
+      if (!result.city || result.city === 'N/A') {
+        result.city = result.location.split(',')[0].trim() || 'N/A';
+      }
+      
+      result.qualifications = result.qualifications || 'N/A';
+      result.jobDescription = result.jobDescription || 'N/A';
+      result.pay = result.pay || 'N/A';
+      result.date = result.date || null;
+      result.remoteFlag = inferRemoteFlag(result.location);
+      result.sourcePlatform = 'indeed';
+      result.careerTrack = inferCareerTrack(result.jobDescription + ' ' + result.qualifications);
+      result.entryLevelFlag = inferEntryLevelFlag(result.jobTitle, result.jobDescription);
+      result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      result._extractionStrategy = 'indeed-meta';
+      
+      if (result.jobTitle !== 'N/A') {
         return result;
       }
     }
@@ -327,9 +652,9 @@ function extractFromHTML(htmlContent) {
     }
 
     // --- Outlier/Non-job page detection ---
-    // If no job-relevant fields, skip
+    // If no job-relevant fields, return with defaults
     result._extractionStrategy = 'none';
-    result.jobTitle = 'N/A';
+    result.jobTitle = cleanEncodingArtifacts($('h1').first().text().trim()) || cleanEncodingArtifacts($('title').text().split(' - ')[0].trim()) || 'N/A';
     result.company = 'N/A';
     result.location = 'N/A';
     result.pay = 'N/A';
@@ -345,249 +670,12 @@ function extractFromHTML(htmlContent) {
     result.entryLevelFlag = false;
     result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     return result;
-  // --- DOCX/Structured HTML Extraction ---
-  // Detect if this is a DOCX-converted/structured HTML (look for .section-title or .container)
-  const isDocxHtml = $('.section-title').length > 0 || $('.container').length > 0;
-  if (isDocxHtml) {
-    // Job Title
-    let jobTitle = $('h1').first().text().trim();
-    if (!jobTitle) jobTitle = $('title').text().trim();
-    result.jobTitle = jobTitle || 'N/A';
-
-    // Company
-    let company = '';
-    // Try to find company in .job-meta or About section
-    const metaText = $('.job-meta').text();
-    const companyMatch = metaText.match(/Company:\s*([^\n<]+)/i);
-    if (companyMatch) company = companyMatch[1].trim();
-    if (!company) {
-      // Try to find in About section
-      const about = $('.section-title').filter((i, el) => $(el).text().toLowerCase().includes('about the company')).next('p').text();
-      if (about) {
-        // Heuristic: first word(s) before 'is' or 'are'
-        const m = about.match(/^(\w[\w\s&,-]+?)\s+(is|are)\b/i);
-        if (m) company = m[1].trim();
-      }
-    }
-    result.company = company || 'N/A';
-
-    // Location
-    let location = '';
-    const locMatch = metaText.match(/Location:\s*([^\n<]+)/i);
-    if (locMatch) location = locMatch[1].trim();
-    // Try additional location in Additional Information section
-    if (!location) {
-      const addInfo = $('.section-title').filter((i, el) => $(el).text().toLowerCase().includes('additional information')).next('ul').text();
-      const loc2 = addInfo.match(/Location:\s*([^\n<]+)/i);
-      if (loc2) location = loc2[1].trim();
-    }
-    result.location = location || 'N/A';
-
-    // State, region, city
-    const extractedState = inferState(location, result.company, result.jobTitle);
-    result.state = extractedState;
-    result.region = getStateRegion(extractedState);
-    let city = 'N/A';
-    if (location && location !== 'N/A') {
-      const cityStateMatch = location.match(/^([^,]+),?\s*([A-Z]{2})?/);
-      if (cityStateMatch) {
-        city = cityStateMatch[1].trim();
-        city = city.replace(/^[\s]*(location[:\s]*|based in[:\s]*)/i, '').trim();
-      } else {
-        const firstPart = location.split(/[,(]/)[0].trim();
-        if (firstPart.length > 0 && firstPart.toLowerCase() !== 'remote') {
-          city = firstPart.replace(/^[\s]*(location[:\s]*|based in[:\s]*)/i, '').trim();
-        }
-      }
-    }
-    result.city = city;
-
-    // Job Description: concatenate About the Opportunity, Essential Functions, etc.
-    let jobDesc = '';
-    const descSections = ['about the opportunity', 'essential functions', 'responsibilities', 'job summary', 'position summary', 'about the role', 'job description'];
-    descSections.forEach(section => {
-      $('.section-title').each((i, el) => {
-        if ($(el).text().toLowerCase().includes(section)) {
-          // Get next <p> or <ul>
-          let next = $(el).next();
-          if (next.is('ul')) {
-            jobDesc += section.charAt(0).toUpperCase() + section.slice(1) + ':\n';
-            next.find('li').each((j, li) => {
-              jobDesc += '- ' + $(li).text().trim() + '\n';
-            });
-          } else if (next.is('p')) {
-            jobDesc += section.charAt(0).toUpperCase() + section.slice(1) + ':\n' + next.text().trim() + '\n';
-          }
-        }
-      });
-    });
-    result.jobDescription = jobDesc.trim() || 'N/A';
-
-    // Qualifications: from Qualifications and Desired Qualifications sections
-    let quals = [];
-    $('.section-title').each((i, el) => {
-      const txt = $(el).text().toLowerCase();
-      if (txt.includes('qualifications')) {
-        let next = $(el).next();
-        if (next.is('ul')) {
-          next.find('li').each((j, li) => {
-            quals.push($(li).text().trim());
-          });
-        } else if (next.is('p')) {
-          quals.push(next.text().trim());
-        }
-      }
-    });
-    result.qualifications = quals.join('; ') || 'N/A';
-
-    // Pay: look for Wage Rate or similar
-    let pay = '';
-    const payMatch = metaText.match(/Wage Rate:\s*([^\n<]+)/i);
-    if (payMatch) pay = payMatch[1].trim();
-    result.pay = pay || 'N/A';
-
-    // Date: try to find in comment or meta
-    let date = '';
-    const commentMatch = htmlContent.match(/Saved:\s*(\d{4}-\d{2}-\d{2})/);
-    if (commentMatch) date = commentMatch[1];
-    result.date = date || null;
-
-    // Add missing fields to match schema
-    result.remoteFlag = inferRemoteFlag(result.location);
-    result.sourcePlatform = 'html';
-    result.careerTrack = inferCareerTrack(result.jobDescription + ' ' + result.qualifications);
-    result.entryLevelFlag = inferEntryLevelFlag(result.jobTitle, result.jobDescription);
-    result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-
-    return result;
-  }
-
-  // --- Default/Indeed/Web Extraction (existing logic) ---
-  // ...existing code...
-
-  // Pay - search for salary info and normalize to hourly
-  let pay = 'N/A';
-  let payHourly = null;
-  let payRaw = null;
-  
-  const bodyText = $.text();
-  const payPatterns = [
-    // hourly patterns
-    { pattern: /\$\s?(\d+(?:\.\d+)?)\s?[-–]\s?\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|\/hr|hr)\b/gi, type: 'hourly_range' },
-    { pattern: /\$\s?(\d+(?:\.\d+)?)\s?(?:per\s?hour|\/hr|hr)\b/gi, type: 'hourly' },
-    // annual patterns with decimal support
-    { pattern: /\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?[-–]\s?\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|\/yr|annually|a\s?year)\b/gi, type: 'annual_range' },
-    { pattern: /\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(?:per\s?year|\/yr|annually|a\s?year)\b/gi, type: 'annual' },
-    // fallback patterns
-    { pattern: /\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/gi, type: 'fallback' },
-    { pattern: /(?:salary|pay|compensation):?\s*\$[\d,]+(?:\.\d{2})?(?:\s*-\s*\$[\d,]+(?:\.\d{2})?)?(?:\s*(?:per|\/|a|an)\s*(?:year|month|hour|week|annum))/gi, type: 'fallback' }
-  ];
-
-  for (const patternObj of payPatterns) {
-    const matches = [...bodyText.matchAll(patternObj.pattern)];
-    if (matches.length > 0) {
-      const match = matches[0];
-      pay = match[0].trim();
-      
-      // Normalize to hourly based on pattern type
-      if (patternObj.type === 'hourly_range' && match[1] && match[2]) {
-        const low = parseFloat(match[1]);
-        const high = parseFloat(match[2]);
-        payHourly = Math.round((low + high) / 2 * 100) / 100;
-        payRaw = { type: 'hourly_range', min: low, max: high };
-      } else if (patternObj.type === 'hourly' && match[1]) {
-        payHourly = Math.round(parseFloat(match[1]) * 100) / 100;
-        payRaw = { type: 'hourly', value: parseFloat(match[1]) };
-      } else if (patternObj.type === 'annual_range' && match[1] && match[2]) {
-        const low = parseFloat(match[1].replace(/,/g, ''));
-        const high = parseFloat(match[2].replace(/,/g, ''));
-        const midAnnual = (low + high) / 2;
-        payHourly = Math.round(midAnnual / 2080 * 100) / 100; // 2080 hours = 40hrs/week * 52 weeks
-        payRaw = { type: 'annual_range', min: low, max: high, annual_mid: midAnnual };
-      } else if (patternObj.type === 'annual' && match[1]) {
-        const annual = parseFloat(match[1].replace(/,/g, ''));
-        payHourly = Math.round(annual / 2080 * 100) / 100;
-        payRaw = { type: 'annual', value: annual };
-      }
-      break;
-    }
-  }
-  
-  // Store normalized hourly pay as primary pay field
-  result.pay = payHourly ? `$${payHourly}/hr` : pay;
-
-  // Date - search for closing/deadline date, posting date, or any date
-  let date = 'N/A';
-  // Check JSON-LD for datePosted
-  const jsonLd = $('script[type="application/ld+json"]').text();
-  if (jsonLd) {
-    try {
-      const ldData = JSON.parse(jsonLd);
-      if (ldData.datePosted) {
-        date = 'Posted: ' + ldData.datePosted;
-      }
-    } catch (e) {}
-  }
-  // If no posting date, look for closing dates
-  if (date === 'N/A') {
-    const datePatterns = [
-      /(?:deadline|closes?|filing period|application period|submission deadline|apply by|due|until|by)\s+[^.!?\n]*(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4}|\d{4}-\d{2}-\d{2})[^.!?\n]*/i,
-      /(?:applications?\s+(?:will be|are)\s+accepted|open|posted)\s+(?:until|by|on)\s+[^.!?\n]*(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4})[^.!?\n]*/i,
-      /(?:job\s+posted|updated|posted on)\s+[^.!?\n]*(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4})[^.!?\n]*/i,
-      /[^.!?\n]*(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4}|\d{4}-\d{2}-\d{2})[^.!?\n]*(?:deadline|closes?|filing|application|submission|apply|due)[^.!?\n]*/i,
-      /until\s+(?:the\s+)?positions?\s+(?:are\s+)?filled/i,
-      /open\s+until\s+[^.!?\n]*/i,
-      /continuous\s+(?:basis|recruitment)/i
-    ];
-    for (const pattern of datePatterns) {
-      const match = bodyText.match(pattern);
-      if (match) {
-        date = match[0].trim();
-        break;
-      }
-    }
-  }
-  // Fallback to any date with context
-  if (date === 'N/A') {
-    const dateRegex = /\b(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4}|\d{4}-\d{2}-\d{2})\b/g;
-    const match = bodyText.match(dateRegex);
-    if (match) {
-      // Take the first date and some surrounding text
-      const index = bodyText.indexOf(match[0]);
-      const start = Math.max(0, index - 50);
-      const end = Math.min(bodyText.length, index + match[0].length + 50);
-      date = bodyText.substring(start, end).trim();
-    }
-  }
-  // Format date if it's a posted ISO date
-  if (date.startsWith('Posted: ')) {
-    const iso = date.replace('Posted: ', '');
-    try {
-      const d = new Date(iso);
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const year = d.getFullYear();
-      date = `${month}-${day}-${year}`;
-    } catch (e) {
-      // Keep original if parsing fails
-    }
-  }
-  result.date = date === 'N/A' ? null : date;
-
-  // Add missing fields to match Python pipeline schema (state and region already set above)
-  result.remoteFlag = inferRemoteFlag(result.location);
-  result.sourcePlatform = "html";
-  result.careerTrack = inferCareerTrack(result.jobDescription + " " + result.qualifications);
-  result.entryLevelFlag = inferEntryLevelFlag(result.jobTitle, result.jobDescription);
-  result.collectedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-
-  return result;
 }
 
 
 // Use absolute paths for input/output directories
 const htmlDir = path.resolve(__dirname, '../data/html');
-const jsonDir = path.resolve(__dirname, '../data/json');
+const jsonDir = path.resolve(__dirname, '../data/json/html');
 console.log('DEBUG: Using htmlDir:', htmlDir);
 console.log('DEBUG: Using jsonDir:', jsonDir);
 

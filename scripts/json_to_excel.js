@@ -40,20 +40,20 @@ if (fs.existsSync(webScrapeDir)) {
   });
 }
 
-// Load from manual JSON files for additional data
-const manualDir = 'data/json/manual';
-if (fs.existsSync(manualDir)) {
-  const manualFiles = fs.readdirSync(manualDir).filter(file => file.endsWith('.json'));
-  manualFiles.forEach(file => {
+// Load from html JSON files for additional data
+const htmlDir = 'data/json/html';
+if (fs.existsSync(htmlDir)) {
+  const htmlFiles = fs.readdirSync(htmlDir).filter(file => file.endsWith('.json'));
+  htmlFiles.forEach(file => {
     try {
-      const filePath = path.join(manualDir, file);
+      const filePath = path.join(htmlDir, file);
       const jobData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
       if (Array.isArray(jobData)) {
         jobs.push(...jobData);
       } else {
         jobs.push(jobData);
       }
-      console.log(`Loaded manual job data from ${file}`);
+      console.log(`Loaded HTML job data from ${file}`);
     } catch (err) {
       console.error(`Error reading ${file}:`, err.message);
     }

@@ -3,11 +3,11 @@ const XlsxPopulate = require('xlsx-populate');
 const fs = require('fs');
 const path = require('path');
 
-const manualDir = 'data/json/manual';
+const htmlDir = 'data/json/html';
 const webScrapeDir = 'data/json/webScrape';
 let jobs = [];
 
-[manualDir, webScrapeDir].forEach(jsonDir => {
+[htmlDir, webScrapeDir].forEach(jsonDir => {
   if (fs.existsSync(jsonDir)) {
     const jsonFiles = fs.readdirSync(jsonDir).filter(file => file.endsWith('.json'));
     jsonFiles.forEach(file => {

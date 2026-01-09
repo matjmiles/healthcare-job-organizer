@@ -4,7 +4,7 @@ const path = require('path');
 // Directories containing JSON job files
 const directories = [
   path.resolve(__dirname, '../data/json/webScrape'),
-  path.resolve(__dirname, '../data/json/manual'),
+  path.resolve(__dirname, '../data/json/html'),
   path.resolve(__dirname, '../data/json/word')
 ];
 

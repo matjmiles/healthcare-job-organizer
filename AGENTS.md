@@ -74,15 +74,23 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Qualification detection via regex patterns for education/experience markers
    - Skills section identification to prevent bleeding into descriptions
 
-## Current State (January 9, 2026)
+9. **HTML Extraction Overhaul** (January 2026):
+   - Multi-strategy extraction system supporting 5 HTML format types
+   - 100% extraction success rate (up from 78% with 22 failed files)
+   - Encoding cleanup: removes Â artifacts, â€™ smart quotes, Unicode issues
+   - Company name normalization for consistent employer identification
+   - Pay normalization: converts annual salaries to hourly (÷ 2080 hrs/year)
+   - Extraction strategies: table-based, container-styled, indeed-meta, section-based
+
+## Current State (January 10, 2026)
 
 - **Pipeline Jobs**: ~18 (from ~865 analyzed with maximum restrictiveness filtering)
-- **Manual Jobs**: ~125 (human-curated collections)
+- **HTML Jobs**: ~103 (extracted from HTML job postings)
 - **Word Document Jobs**: ~59 (converted from .docx files)
-- **Final Excel Output**: ~202 jobs total (18 pipeline + 125 manual + 59 Word)
+- **Final Excel Output**: ~180 jobs total (18 pipeline + 103 HTML + 59 Word)
 - **Latest Excel File**: `output/jobs_consolidated_2026-01-05_22-49-22.xlsx`
 - **Latest Word-Only Excel**: `output/jobs_word_only_2026-01-09_19-30-01.xlsx`
-- **Filtering Rate**: 98% of scraped jobs excluded for quality control
+- **HTML Extraction Rate**: 100% success (all 103 files processed)
 - **Test Coverage**: 100% pass rate for core filtering logic
 
 ## Workflow Notes
@@ -94,20 +102,20 @@ This file documents commands and tasks for opencode to remember across sessions.
   - Requires explicit bachelor's degree mentions
   - Excludes 3+ years experience and advanced degrees
 
-- **Manual Directory** (`data/json/manual/`):
-  - Human-curated job collections
-  - Pre-filtered by manual selection
-  - No additional automated filtering applied
-  - Preserved exactly as selected by users
+- **HTML Directory** (`data/json/html/`):
+  - HTML-extracted job postings (renamed from manual/)
+  - Multi-format support: table-based, container-styled, Indeed
+  - 100% extraction success rate with encoding cleanup
+  - Company name normalization and pay standardization
 
 ### Processing Options
 - **Combined Processing** (`npm run json-to-excel`):
-  - Loads from webScrape + manual + word directories
+  - Loads from webScrape + html + word directories
   - Creates comprehensive Excel with all available jobs
 
 - **Separate Processing**:
   - `npm run json-to-excel-webscrape`: Pipeline jobs only
-  - `npm run json-to-excel-manual`: Manual jobs only
+  - `npm run json-to-excel-html`: HTML-extracted jobs only
   - `npm run word-to-json`: Convert Word documents to JSON
 
 - **Multi-Source Support**: Handles HTML, JSON, and Word document inputs
@@ -131,8 +139,8 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 ## Notes for Future Sessions
 
-- **Directory Structure**: `data/json/webScrape/` for pipeline, `data/json/manual/` for curated jobs
-- **Filtering Logic**: Pipeline applies maximum restrictiveness; manual jobs preserved as-is
+- **Directory Structure**: `data/json/webScrape/` for pipeline, `data/json/html/` for HTML-extracted jobs
+- **Filtering Logic**: Pipeline applies maximum restrictiveness; HTML jobs preserved as-is
 - **Processing Flexibility**: Scripts available for combined or separate processing
-- **Quality Control**: 98% filtering rate for pipeline jobs, human curation for manual jobs
+- **Quality Control**: 98% filtering rate for pipeline jobs, human curation for HTML jobs
 - **Test Coverage**: Comprehensive validation with 100% pass rate maintained
