@@ -10,7 +10,10 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 ### Manual Job Collection  
 - **Convert HTML to JSON**: `node scripts/html_to_json.js`
-- **Generate Excel**: `npm run json-to-excel`
+- **Convert Word documents to JSON**: `node scripts/word_to_json.js`
+- **Generate Excel (all sources)**: `npm run json-to-excel`
+- **Generate Excel (word only)**: `node scripts/json_to_excel_word.js`
+- **Interactive Excel menu**: `node scripts/run_excel_menu.js`
 - **Analyze job market insights**: `npm run analyze-jobs`
 
 ### Testing & Quality Assurance
@@ -49,8 +52,9 @@ This file documents commands and tasks for opencode to remember across sessions.
 
 5. **Advanced Pay Data Enhancement**:
    - HTML page scraping for compensation extraction
-   - Normalized hourly rates
+   - Normalized hourly rates (annual salaries ÷ 2080 hours/year)
    - Filters for erroneous values (<$10/hr)
+   - All pay displayed as hourly for easy comparison
 
 6. **Healthcare Administration Job Market Analysis**:
    - Comprehensive analysis of 202 job postings for entry-level insights
@@ -63,13 +67,21 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Duplicate detection and removal
    - Consistent formatting across all outputs
 
-## Current State (January 5, 2026)
+8. **Word Document Extraction Improvements** (January 2026):
+   - Table-based parsing using cell boundary detection (double/triple newlines)
+   - Proper separation of job descriptions from qualifications
+   - Unicode apostrophe handling (curly `'` U+2019 vs straight `'` U+0027)
+   - Qualification detection via regex patterns for education/experience markers
+   - Skills section identification to prevent bleeding into descriptions
+
+## Current State (January 9, 2026)
 
 - **Pipeline Jobs**: ~18 (from ~865 analyzed with maximum restrictiveness filtering)
 - **Manual Jobs**: ~125 (human-curated collections)
 - **Word Document Jobs**: ~59 (converted from .docx files)
 - **Final Excel Output**: ~202 jobs total (18 pipeline + 125 manual + 59 Word)
 - **Latest Excel File**: `output/jobs_consolidated_2026-01-05_22-49-22.xlsx`
+- **Latest Word-Only Excel**: `output/jobs_word_only_2026-01-09_19-30-01.xlsx`
 - **Filtering Rate**: 98% of scraped jobs excluded for quality control
 - **Test Coverage**: 100% pass rate for core filtering logic
 
