@@ -23,17 +23,22 @@ const menuOptions = [
     description: 'Creates an Excel file from only the JSON files in data/json/word (Word document jobs).'
   },
   {
-    label: '5. Generate Excel from ALL JSON files (combined processing)',
+    label: '5. Generate Excel from LinkedIn JSON only (data/json/linkedin)',
+    script: 'json_to_excel_linkedin.js',
+    description: 'Creates an Excel file from only the JSON files in data/json/linkedin (LinkedIn-extracted jobs).'
+  },
+  {
+    label: '6. Generate Excel from ALL JSON files (combined processing)',
     script: 'json_to_excel_all.js',
     description: 'Creates an Excel file from all JSON files in manual, webScrape, and word directories.'
   },
   {
-    label: '6. Generate Excel from ALL sources (pipeline + manual + word)',
+    label: '7. Generate Excel from ALL sources (pipeline + manual + word)',
     script: 'json_to_excel.js',
     description: 'Runs the main script combining pipeline JSON, manual JSON, and word JSON files.'
   },
   {
-    label: '7. Exit',
+    label: '8. Exit',
     script: null,
     description: 'Exit the menu.'
   }
@@ -63,7 +68,7 @@ const rl = readline.createInterface({
 
 function prompt() {
   printMenu();
-  rl.question('\nSelect an option (1-7): ', answer => {
+  rl.question('\nSelect an option (1-8): ', answer => {
     const idx = parseInt(answer.trim(), 10) - 1;
     if (idx >= 0 && idx < menuOptions.length) {
       const opt = menuOptions[idx];

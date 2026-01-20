@@ -82,15 +82,25 @@ This file documents commands and tasks for opencode to remember across sessions.
    - Pay normalization: converts annual salaries to hourly (÷ 2080 hrs/year)
    - Extraction strategies: table-based, container-styled, indeed-meta, section-based
 
-## Current State (January 10, 2026)
+10. **HTML & Word Qualification Filtering** (January 9, 2026):
+    - Removed jobs requiring only HS/GED (no bachelor's degree mention)
+    - Removed jobs requiring 3+ years of experience
+    - Removed jobs requiring master's degrees
+    - Removed corrupted/empty extraction files
+    - HTML: 103 → 51 files (52 removed)
+    - Word: 59 → 58 files (1 removed - Manager Administrative Services)
+    - Total filtered dataset: 127 jobs (down from ~180)
 
-- **Pipeline Jobs**: ~18 (from ~865 analyzed with maximum restrictiveness filtering)
-- **HTML Jobs**: ~103 (extracted from HTML job postings)
-- **Word Document Jobs**: ~59 (converted from .docx files)
-- **Final Excel Output**: ~180 jobs total (18 pipeline + 103 HTML + 59 Word)
-- **Latest Excel File**: `output/jobs_consolidated_2026-01-05_22-49-22.xlsx`
-- **Latest Word-Only Excel**: `output/jobs_word_only_2026-01-09_19-30-01.xlsx`
-- **HTML Extraction Rate**: 100% success (all 103 files processed)
+## Current State (January 9, 2026)
+
+- **Pipeline Jobs**: 18 (from ~865 analyzed with maximum restrictiveness filtering)
+- **HTML Jobs**: 51 (after qualification filtering - removed HS/GED only, 3+ years experience, master's requirements)
+- **Word Document Jobs**: 58 (after removing master's degree requirements)
+- **Final Excel Output**: 127 jobs total (18 pipeline + 51 HTML + 58 Word)
+- **Latest Consolidated Excel**: `output/jobs_consolidated_2026-01-09_20-56-15.xlsx`
+- **Latest HTML-Only Excel**: `output/jobs_html_only_2026-01-09_21-00-16.xlsx`
+- **Latest Word-Only Excel**: `output/jobs_word_only_2026-01-09_21-00-21.xlsx`
+- **Latest Pipeline Excel**: `output/jobs_webScrape_only_2026-01-09_21-00-27.xlsx`
 - **Test Coverage**: 100% pass rate for core filtering logic
 
 ## Workflow Notes
